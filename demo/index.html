@@ -1,0 +1,33 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Richarea - Cross browser richarea munipulator library written in CoffeeScript</title>
+        <link type="text/css" rel="stylesheet" href="css/style.css">
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://jashkenas.github.com/coffee-script/extras/coffee-script.js"></script>
+        <!--[if IE]>
+            <script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <script type="text/javascript" src="js/richarea/richarea.js"></script>
+        <script type="text/javascript">
+            window.onload = function(){
+                richarea = document.getElementById('richarea');
+                richarea = new Richarea(richarea);
+            };
+        </script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <header>
+                <h1>Richarea Demo</h1>
+                <p>Cross browser richarea munipulator library written in CoffeeScript</p>
+            </header>
+            <section id="content">
+                <h2>Demo</h2>
+                <iframe id="richarea">
+                </iframe>
+            </section>
+        </div>
+    </body>
+</html>

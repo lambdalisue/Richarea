@@ -1,0 +1,50 @@
+body{
+    background: #f7f7f7;
+    color: #3c3c3c;
+}
+div#wrapper{
+    width: 980px;
+    margin: 10px auto;
+    padding: 20px;
+    border: 1px solid #e4e4e4;
+    background: #fff;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+header p{
+    font-size: 0.8em;
+    color: #ababab;
+}
+h2{
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e4e4e4;
+}
+iframe.richarea{
+    width: 100%;
+    height: 480px;
+    padding: 0;
+    border: 1px solid #e4e4e4;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+pre{
+    font-size: 0.8em;
+    padding: 20px;
+    border: 1px solid #e4e4e4;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background: #ffefef;
+}
+dt{
+    font-weight: bold;
+}
+dd{
+    font-size: 0.8em;
+}
+dd pre{
+    font-size: 1.0em;
+}
+
