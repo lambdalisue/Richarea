@@ -1,108 +1,7 @@
-chrome = navigator.userAgent.indexOf 'Chrome' isnt -1
-safari = navigator.vendor.indexOf 'Apple' isnt -1
-firefox = navigator.userAgent.indexOf 'Firefox' isnt -1
-netscape = navigator.userAgent.indexOf 'Netscape' isnt -1
-msie = navigator.userAgent.indexOf 'MSIE' isnt -1
-mozilla = navigator.userAgent.indexOf 'Gecko' isnt -1
-
-class @Richarea
-  constructor: (@iframe) ->
-    # --- construct
-    @iframe.className += 'richarea'
-    @controller = new RawController @iframe
-  getValue: ->
-    return @controller.getValue()
-  setValue: (value) ->
-    @controller.setValue()
-  # --- surround
-  _surround: (element) ->
-    #if not msie
-    #  # Not fully supported.
-    #  @controller.window.focus()
-    #  range = @controller.document.selection.createRange()
-    #  container = document.createElement('div')
-    #  container.appendChild element
-    #  element.innerHTML = range.htmlText
-    #  range.pasteHTML container.innerHTML
-    #else
-    munipulator = new SelectionMunipulator @controller.window
-    munipulator.wrapSelection element
-  surround: (name) ->
-    element = document.createElement(name)
-    @_surround element
-  red: ->
-    element = document.createElement('span')
-    element.style.color = "#ff0000"
-    @_surround element
-  green: ->
-    element = document.createElement('span')
-    element.style.color = "#00ff00"
-    @_surround element
-  blue: ->
-    element = document.createElement('span')
-    element.style.color = "#0000ff"
-    @_surround element
-  # --- heading
-  heading: (level) ->
-    @controller.formatBlock "<#{level}>"
-  # --- decoration
-  bold: ->
-    @surround 'strong'
-  italic: ->
-    @surround 'em'
-  underline: ->
-    @controller.underline()
-  # --- color
-  foreColor: (color) ->
-    @controller.foreColor color
-  backColor: (color) ->
-    if firefox or mozilla
-      @controller.hiliteColor color
-    else
-      @controller.backColor color
-  # --- font
-  fontName: (name) ->
-    @controller.fontName name
-  fontSize: (size) ->
-    @controller.fontSize size
-  # --- indent
-  indent: ->
-    @controller.indent()
-  outdent: ->
-    @controller.outdent()
-  # --- insert
-  insertLink: (href) ->
-    @controller.createLink href
-  insertImage: (src) ->
-    @controller.insertImage src
-  insertOrderedList: ->
-    @controller.insertOrderedList null
-  insertUnorderedList: ->
-    @controller.insertUnorderedList null
-  # --- copy & paste
-  copy: ->
-    @controller.copy()
-  cut: ->
-    @controller.cut()
-  paste: ->
-    @controller.paste()
-  delete: ->
-    @controller.delete()
-  # --- undo / redo
-  undo: ->
-    @controller.undo()
-  redo: ->
-    @controller.redo()
-  # --- justify
-  justifyCenter: ->
-    @controller.justifyCenter()
-  justifyFull: ->
-    @controller.justifyFull()
-  justifyLeft: ->
-    @controller.justifyLeft()
-  justifyRight: ->
-    @controller.justifyRight()
 class RawController
+  ###
+  execCommand raw level controller
+  ###
   constructor: (@iframe) ->
     if @iframe.contentDocument?
       @document = @iframe.contentDocument
@@ -117,10 +16,6 @@ class RawController
     else if @document.designMode?
       @document.designMode = 'On'
     @window = @iframe.contentWindow
-  setValue: (value) ->
-    @body.innerHTML = value
-  getValue: ->
-    return @body.innerHTML
   execCommand: (name, value=null) ->
     @document.execCommand name, false, value
   bold: -> # <b>
@@ -231,6 +126,235 @@ class RawController
     @execCommand 'unlink'
   unselect: ->
     @execCommand 'unselect'
+class DOMMunipulator
+  ###
+  DOM Munipulator
+  ###
+  isLeaf: (node) ->
+    return not node.firstChild?
+  createElementFromHTML: (html) ->
+    container = document.createElement 'div'
+    container.innerHTML = html
+    return container.firstChild
+  compare: (lhs, rhs) ->
+    deepEqual = (lhs, rhs) ->
+      for key, value of lhs
+        if value instanceof Object
+          result = deepEqual value, rhs[key]
+        else
+          result = value is rhs[key]
+        if not result then return false
+      return true
+    c1 = lhs.tagName?.toLowerCase() is rhs.tagName?.toLowerCase()
+    c2 = lhs.className is rhs.className
+    c3 = deepEqual lhs.style, rhs.style
+    console.log 'compare', c1, c2, c3
+    return c1 and c2 and c3
+  dig: (node, reverse=false) ->
+    ### dig to the node leaf and return ###
+    child = if reverse then 'lastChild' else 'firstChild'
+    while not @isLeaf node
+      node = node[child]
+    return node
+  next: (node, dig=false) ->
+    ### get next node/leaf. dig to the node leaf when `dig` is true ###
+    while not node.nextSibling
+      node = node.parentNode
+      if not node then return null
+    if dig
+      # dig to the node leaf
+      node = @dig node, false
+    return node
+  previous: (node, dig=false) ->
+    ### get previous node/leaf. dig to the node leaf when `dig` is true ###
+    while not node.previousSibling
+      node = node.parentNode
+      if not node then return null
+    if dig
+      # dig to the node leaf
+      node = @dig node, true
+    return node
+  execAtLeaf: (leaf, callback, start=undefined, end=undefined) ->
+    text = leaf.textContent
+    start ?= 0
+    end ?= text.length
+    if start is 0 and end is text.length
+      callback leaf
+    else
+      left = text.substring 0, start
+      middle = text.substring start, end
+      right = text.substring end, text.length
+      # store parentNode and nextSibling
+      parentNode = leaf.parentNode
+      nextSibling = leaf.nextSibling
+      # remove node
+      parentNode.removeChild leaf
+      # create element for each part
+      if left.length > 0
+        textNode = document.createTextNode left
+        parentNode.insertBefore textNode, nextSibling
+      if middle.length > 0
+        textNode = document.createTextNode middle
+        parentNode.insertBefore textNode, nextSibling
+        leaf = textNode
+      if right.length > 0
+        textNode = document.createTextNode right
+        parentNode.insertBefore textNode, nextSibling
+      callback leaf
+  execAtNode: (node, callback, start=undefined, end=undefined) ->
+    if @isLeaf node
+      @execAtLeaf node, callback, start, end
+    else
+      for child in node.childNodes
+        @execAtNode child, callback
+  execAtSelection: (selection, callback) ->
+    if selection.isCollapsed
+      if window.console?.warn? then console.warn "Nothing has selected"
+    else
+      range = selection.getRangeAt 0
+      startContainer = range.startContainer
+      startOffset = range.startOffset
+      endContainer = range.endContainer
+      endOffset = range.endOffset
+      # because of Opera, we need to remove the selection before modifying the
+      # DOM hierarchy
+      selection.removeAllRanges()
+      
+      if startContainer is endContainer
+        # selected range is on same node
+        @execAtNode startContainer, callback, startOffset, endOffset
+      else
+        if not @isLeaf startContainer
+          startLeaf = startContainer.childNodes[startOffset]
+        else
+          # exec at first leaf with offset
+          @execAtLeaf startContainer, callback, startOffset, undefined
+          # set startLeaf to exec rest leafs
+          startLeaf = @next startContainer, true
+        if not @isLeaf endContainer
+          if endOffset > 0
+            endLeaf = endContainer.childNodes[endOffset - 1]
+          else
+            endLeaf = @previous endContainer, true
+        else
+          # exec at last leaf with offset
+          @execAtLeaf endContainer, callback, undefined, endOffset
+          # set endLeaf to exec rest leafs
+          endLeaf = @previous endContainer, true
+        # exec at all rest of leafs
+        while startLeaf
+          # store nextLeaf before execute
+          nextLeaf = @next startLeaf, true
+          # exec at current leaf
+          @execAtLeaf startLeaf, callback
+          if startLeaf is endLeaf then break
+          startLeaf = nextLeaf
+
+class @Richarea
+  constructor: (@iframe) ->
+    # --- construct
+    @raw = new RawController @iframe
+    @munipulator = new DOMMunipulator
+  getValue: ->
+    return @raw.body.innerHTML
+  setValue: (value) ->
+    @raw.body.innerHTML = value
+  # --- surround
+  surround: (html) ->
+    if @raw.window.getSelection?
+      surroundCallback = (leaf) =>
+        wrap = @munipulator.createElementFromHTML html
+        parentNode = leaf.parentNode
+        if not leaf.previousSibling and not leaf.nextSibling
+          if @munipulator.compare parentNode, wrap
+            # Remove parentNode
+            nextSibling = parentNode.nextSibling
+            grandParentNode = parentNode.parentNode
+            grandParentNode.removeChild parentNode
+            grandParentNode.insertBefore leaf, nextSibling
+            return
+        nextSibling = leaf.nextSibling
+        parentNode.removeChild leaf
+        wrap.appendChild leaf
+        parentNode.insertBefore wrap, nextSibling
+      selection = @raw.window.getSelection()
+      @munipulator.execAtSelection selection, surroundCallback
+    else
+      # This is an alternative function but not completely equal
+      @raw.window.focus()
+      range = @raw.document.selection.createRange()
+      wrap = @munipulator.createElementFromHTML html
+      wrap.innerHTML = range.htmlText
+      container = document.createElement 'div'
+      container.appendChild wrap
+      range.pasteHTML container.innerHTML
+  # --- color
+  red: ->
+    @surround '<span style="color: red">'
+  blue: ->
+    @surround '<span style="color: blue">'
+  green: ->
+    @surround '<span style="color: green">'
+  # --- heading
+  heading: (level) ->
+    @raw.formatBlock "<#{level}>"
+  # --- decoration
+  bold: ->
+    @surround '<strong>'
+  italic: ->
+    @surround '<em>'
+  underline: ->
+    @raw.underline()
+  # --- color
+  foreColor: (color) ->
+    @raw.foreColor color
+  backColor: (color) ->
+    if firefox or mozilla
+      @raw.hiliteColor color
+    else
+      @raw.backColor color
+  # --- font
+  fontName: (name) ->
+    @raw.fontName name
+  fontSize: (size) ->
+    @raw.fontSize size
+  # --- indent
+  indent: ->
+    @raw.indent()
+  outdent: ->
+    @raw.outdent()
+  # --- insert
+  insertLink: (href) ->
+    @raw.createLink href
+  insertImage: (src) ->
+    @raw.insertImage src
+  insertOrderedList: ->
+    @raw.insertOrderedList null
+  insertUnorderedList: ->
+    @raw.insertUnorderedList null
+  # --- copy & paste
+  copy: ->
+    @raw.copy()
+  cut: ->
+    @raw.cut()
+  paste: ->
+    @raw.paste()
+  delete: ->
+    @raw.delete()
+  # --- undo / redo
+  undo: ->
+    @raw.undo()
+  redo: ->
+    @raw.redo()
+  # --- justify
+  justifyCenter: ->
+    @raw.justifyCenter()
+  justifyFull: ->
+    @raw.justifyFull()
+  justifyLeft: ->
+    @raw.justifyLeft()
+  justifyRight: ->
+    @raw.justifyRight()
 class SelectionMunipulator
   # Ref: http://help.dottoro.com/ljcvtcaw.php
   constructor: (@window) ->
