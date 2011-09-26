@@ -1,6 +1,13 @@
 body{
     background: #f7f7f7;
     color: #3c3c3c;
+    font-size: 0.8em;
+}
+a, a:visited{
+    color: #8e8eaa;
+}
+a:hover, a:active{
+    color: #8e8eff;
 }
 div#wrapper{
     position: relative;
@@ -14,11 +21,15 @@ div#wrapper{
     border-radius: 5px;
 }
 header p{
-    font-size: 0.8em;
     color: #ababab;
 }
 h2{
     padding-bottom: 5px;
+    border-bottom: 1px solid #e4e4e4;
+}
+h3{
+    padding: 2px 0 5px 10px;
+    border-left: 4px solid #e4e4e4;
     border-bottom: 1px solid #e4e4e4;
 }
 nav#relatedlinks{
