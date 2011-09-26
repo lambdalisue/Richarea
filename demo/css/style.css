@@ -14,6 +14,7 @@ div#wrapper{
     width: 980px;
     margin: 10px auto;
     padding: 20px;
+    padding-top: 40px;
     border: 1px solid #e4e4e4;
     background: #fff;
     -webkit-border-radius: 5px;
@@ -64,6 +65,10 @@ nav#relatedlinks ul li#tumblr a{
 }
 nav#relatedlinks ul li#twitter a{
     background: url(img/twitter_16.png) no-repeat;
+}
+div.addthis_toolbox{
+    position: absolute;
+    top: 20px; left: 20px;
 }
 ul#toolbar{
     margin: 5px 0;
