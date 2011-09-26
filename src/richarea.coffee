@@ -161,6 +161,7 @@ class DOMMunipulator
     while not node.nextSibling
       node = node.parentNode
       if not node then return null
+    node = node.nextSibling
     if dig
       # dig to the node leaf
       node = @dig node, false
@@ -170,6 +171,7 @@ class DOMMunipulator
     while not node.previousSibling
       node = node.parentNode
       if not node then return null
+    node = node.previousSibling
     if dig
       # dig to the node leaf
       node = @dig node, true
@@ -227,20 +229,20 @@ class DOMMunipulator
         if not @isLeaf startContainer
           startLeaf = startContainer.childNodes[startOffset]
         else
+          # store startLeaf to exec rest leafs
+          startLeaf = @next startContainer, true
           # exec at first leaf with offset
           @execAtLeaf startContainer, callback, startOffset, undefined
-          # set startLeaf to exec rest leafs
-          startLeaf = @next startContainer, true
         if not @isLeaf endContainer
           if endOffset > 0
             endLeaf = endContainer.childNodes[endOffset - 1]
           else
             endLeaf = @previous endContainer, true
         else
+          # store endLeaf to exec rest leafs
+          endLeaf = @previous endContainer, true
           # exec at last leaf with offset
           @execAtLeaf endContainer, callback, undefined, endOffset
-          # set endLeaf to exec rest leafs
-          endLeaf = @previous endContainer, true
         # exec at all rest of leafs
         while startLeaf
           # store nextLeaf before execute
@@ -249,12 +251,19 @@ class DOMMunipulator
           @execAtLeaf startLeaf, callback
           if startLeaf is endLeaf then break
           startLeaf = nextLeaf
-
+String.prototype.replaceAll = (original, replace) ->
+  return @.split(original).join(replace)
 class @Richarea
   constructor: (@iframe) ->
     # --- construct
     @raw = new RawController @iframe
     @munipulator = new DOMMunipulator
+    if @iframe.innerHTML?
+      html = @iframe.innerHTML
+      html = html.replaceAll '&lt;', '<'
+      html = html.replaceAll '&gt;', '>'
+      console.log html
+      @setValue html
   getValue: ->
     return @raw.body.innerHTML
   setValue: (value) ->
