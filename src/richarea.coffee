@@ -6,7 +6,7 @@ Cross browser richarea (iframe) munipulator script written in CoffeeScript
 :Author: Alisue (lambdalisue@hashnote.net)
 :License: MIT License
 :Url: http://github.com/lambdalisue/Richarea
-:Version: 0.1.0
+:Version: 0.1.1
 :Reference:
   - http://help.dottoro.com/ljcvtcaw.php
   - http://wiki.bit-hive.com/tomizoo/pg/JavaScript%20Range%A4%CE%BB%C8%A4%A4%CA%FD
@@ -62,6 +62,7 @@ class RawController
       @document = @iframe.contentDocument
     else
       @document = @iframe.contentWindow.document
+    @document.writeln '<body></body>'
     @body = @document.body
     # turn off spellcheck in Firefox
     if @body.spellcheck? then @body.spellcheck = false
