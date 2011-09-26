@@ -1,3 +1,43 @@
+class Browser
+  ###
+  CoffeeScript version of BrowserDetect found in http://www.quirksmode.org/js/detect.html
+  ###
+  constructor: ->
+    @browser = @searchString(@dataBrowser) or "An unknown browser"
+    @version = @searchVersion(navigator.userAgent) or @searchVersion(navigator.appVersion) or "An unknown browser"
+    @OS = @searchString(@dataOS) or "An unknown OS"
+  searchString: (data) ->
+    for row in data
+      @versionSearchString = row.versionSearch or row.identify
+      if row.string?
+        if row.string.indexOf(row.subString) isnt -1
+          return row.identify
+        else if row.prop
+          return row.identify
+  searchVersion: (dataString) ->
+    index = dataString.indexOf @versionSearchString
+    if index is -1 then return
+    return parseFloat dataString.substring(index+@versionSearchString.length+1)
+  dataBrowser: [
+    {string: navigator.userAgent, subString: 'Chrome', identify: 'Chrome'}
+    {string: navigator.userAgent, subString: 'OmniWeb', versionSearch: 'OmniWeb/', identify: 'OmniWeb'}
+    {string: navigator.vendor, subString: 'Apple', identify: 'Safari', versionSearch: 'Version'}
+    {prop: window.opera, identify: 'Opera', versionSearch: 'Version'}
+    {string: navigator.vendor, subString: 'iCab', identify: 'iCab'}
+    {string: navigator.vendor, subString: 'KDE', identify: 'Konqueror'}
+    {string: navigator.userAgent, subString: 'Firefox', identify: 'Firefox'}
+    {string: navigator.vendor, subString: 'Camino', identify: 'Camino'}
+    {string: navigator.userAgent, subString: 'Netscape', identify: 'Netscape'}
+    {string: navigator.userAgent, subString: 'MSIE', identify: 'Explorer', versionSearch: 'MSIE'}
+    {string: navigator.userAgent, subString: 'Gecko', identify: 'Mozilla', versionSearch: 'rv'}
+    {string: navigator.userAgent, subString: 'Mozilla', identify: 'Netscape', versionSearch: 'Mozilla'}
+  ]
+  dataOS: [
+    {string: navigator.platform, subString: 'Win', identify: 'Windows'}
+    {string: navigator.platform, subString: 'Mac', identify: 'Mac'}
+    {string: navigator.userAgent, subString: 'iPhone', identify: 'iPhone/iPad'}
+    {string: navigator.platform, subString: 'Linux', identify: 'Linux'}
+  ]
 class RawController
   ###
   execCommand raw level controller
@@ -16,116 +56,33 @@ class RawController
     else if @document.designMode?
       @document.designMode = 'On'
     @window = @iframe.contentWindow
-  execCommand: (name, value=null) ->
-    @document.execCommand name, false, value
-  bold: -> # <b>
-    @execCommand 'bold'
-  copy: -> # copy to clipboard
-    @execCommand 'copy'
-  createBookmark: (name=null) -> # <a name=name>
-    @execCommand 'createbookmark', name
-  createLink: (url) -> # <a href=url>
-    @execCommand 'createlink', url
-  cut: -> # copy to clipboard and delete
-    @execCommand 'cut'
-  delete: -> # delete
-    @execCommand 'delete'
-  fontName: (name) ->
-    @execCommand 'fontname', name
-  fontSize: (size) ->
-    @execCommand 'fontsize', size
-  foreColor: (color) ->
-    @execCommand 'forecolor', color
-  formatBlock: (block) ->
-    @execCommand 'formatblock', block
-  hiliteColor: (color) ->
-    @execCommand 'hilitecolor', color
-  indent: ->
-    @execCommand 'indent'
-  insertButton: (id) ->
-    @execCommand 'insertbutton', id
-  insertFieldset: (id) ->
-    @execCommand 'insertfieldset', id
-  insertHorizontalRule: (size) ->
-    @execCommand 'inserthorizontalrule', size
-  insertIFrame: (src) ->
-    @execCommand 'insertiframe', src
-  insertImage: (src) ->
-    @execCommand 'insertimage', src
-  insertInputButton: (id) ->
-    @execCommand 'insertinputbutton', id
-  insertInputCheckbox: (id) ->
-    @execCommand 'insertinputcheckbox', id
-  insertInputFileUpload: (id) ->
-    @execCommand 'insertinputfileupload', id
-  insertInputHidden: (id) ->
-    @execCommand 'insertinputhidden', id
-  insertInputImage: (id) ->
-    @execCommand 'insertinputimage', id
-  insertInputPassword: (id) ->
-    @execCommand 'insertinputpassword', id
-  insertInputRadio: (id) ->
-    @execCommand 'insertinputradio', id
-  insertInputReset: (id) ->
-    @execCommand 'insertinputreset', id
-  insertInputSubmit: (id) ->
-    @execCommand 'insertinputsubmit', id
-  insertInputText: (id) ->
-    @execCommand 'insertinputtext', id
-  insertMarquee: (id) ->
-    @execCommand 'insertmarquee', id
-  insertOrderedList: (id) ->
-    @execCommand 'insertorderedlist', id
-  insertParagraph: (id) ->
-    @execCommand 'insertparagraph', id
-  insertSelectDropdown: (id) ->
-    @execCommand 'insertselectdropdown', id
-  insertSelectListbox: (id) ->
-    @execCommand 'insertselectlistbox', id
-  insertTextArea: (id) ->
-    @execCommand 'inserttextarea', id
-  insertUnorderedList: (id) ->
-    @execCommand 'insertunorderedlist', id
-  italic: ->
-    @execCommand 'italic'
-  justifyCenter: ->
-    @execCommand 'justifycenter'
-  justifyFull: ->
-    @execCommand 'justifyfull'
-  justifyLeft: ->
-    @execCommand 'justifyleft'
-  justifyright: ->
-    @execCommand 'justifyright'
-  outdent: ->
-    @execCommand 'outdent'
-  overwrite: (enable) ->
-    @execCommand 'overwrite', enable
-  paste: ->
-    @execCommand 'paste'
-  redo: ->
-    @execCommand 'redo'
-  refresh: ->
-    @execCommand 'refresh'
-  removeFormat: ->
-    @execCommand 'removeformat'
-  selectAll: ->
-    @execCommand 'selectall'
-  strikethrough: ->
-    @execCommand 'strikethrough'
-  subscript: ->
-    @execCommand 'subscript'
-  superscript: ->
-    @execCommand 'superscript'
-  unbookmark: ->
-    @execCommand 'unbookmark'
-  underline: ->
-    @execCommand 'underline'
-  undo: ->
-    @execCommand 'undo'
-  unlink: ->
-    @execCommand 'unlink'
-  unselect: ->
-    @execCommand 'unselect'
+  queryCommandState: (command) ->
+    ###
+    --- Firefox
+      There is a limitation to use this command on firefox
+      See: https://bugzilla.mozilla.org/show_bug.cgi?id=297494
+
+      WORKS_ON_FIREFOX = [
+        'bold', 'insertorderlist', 'insertunorderedlist', 'italic',
+        'justifycenter', 'justifyfull', 'justifyleft', 'justifyright',
+        'strikethrough', 'subscript', 'superscript', 'underline', 'unlink'
+      ]
+
+    --- Google Chrome
+      The command doesn't work on Chrome
+      See: http://code.google.com/p/chromium/issues/detail?id=31316
+    ###
+    return @document.queryCommandState command
+  queryCommandEnabled: (command) ->
+    return @document.queryCommandEnabled command
+  queryCommandIndeterm: (command) ->
+    return @document.queryCommandIndeterm command
+  queryCommandSupported: (command) ->
+    return @document.queryCommandSupported command
+  queryCommandValue: (command) ->
+    return @document.queryCommandValue command
+  execCommand: (command, ui=false, value=null) ->
+    @document.execCommand command, ui, value
 class DOMMunipulator
   ###
   DOM Munipulator
@@ -148,7 +105,6 @@ class DOMMunipulator
     c1 = lhs.tagName?.toLowerCase() is rhs.tagName?.toLowerCase()
     c2 = lhs.className is rhs.className
     c3 = deepEqual lhs.style, rhs.style
-    console.log 'compare', c1, c2, c3
     return c1 and c2 and c3
   dig: (node, reverse=false) ->
     ### dig to the node leaf and return ###
@@ -251,25 +207,92 @@ class DOMMunipulator
           @execAtLeaf startLeaf, callback
           if startLeaf is endLeaf then break
           startLeaf = nextLeaf
-String.prototype.replaceAll = (original, replace) ->
-  return @.split(original).join(replace)
 class @Richarea
   constructor: (@iframe) ->
+    if window.jQuery? and @iframe instanceof jQuery
+      @iframe = @iframe.get(0)
     # --- construct
+    @browser = new Browser
     @raw = new RawController @iframe
     @munipulator = new DOMMunipulator
+    # --- load default value from inner content
     if @iframe.innerHTML?
       html = @iframe.innerHTML
-      html = html.replaceAll '&lt;', '<'
-      html = html.replaceAll '&gt;', '>'
-      console.log html
+      # --- replace escaped tags to real tag
+      html = html.split('&lt;').join '<'
+      html = html.split('&gt;').join '>'
       @setValue html
-  getValue: ->
-    return @raw.body.innerHTML
-  setValue: (value) ->
-    @raw.body.innerHTML = value
-  # --- surround
+  queryCommandState: (command) ->
+    switch @browser.browser
+      # Chrome doesn't support queryCommandState
+      when 'Chrome' then return null
+      # Firefox support limited
+      when 'Firefox'
+        WORKS = [
+          'bold', 'insertorderlist', 'insertunorderedlist', 'italic',
+          'justifycenter', 'justifyfull', 'justifyleft', 'justifyright',
+          'strikethrough', 'subscript', 'superscript', 'underline', 'unlink'
+        ]
+        if command not in WORKS then return null
+    return @raw.queryCommandState command
+  queryCommandEnabled: (command) ->
+    switch @browser.browser
+      # Chrome doesn't support
+      when 'Chrome' then return true
+    return @raw.queryCommandEnabled command
+  queryCommandIndeterm: (command) ->
+    return @raw.queryCommandIndeterm command
+  queryCommandSupported: (command) ->
+    return @raw.queryCommandSupported command
+  queryCommandValue: (command) ->
+    return @raw.queryCommandValue command
+  execCommand: (command, ui=undefined, value=undefined) ->
+    # check the command is available or not
+    if not @queryCommandEnabled command
+      if window.console?.warn? then console.warn "#{command} is not enabled in this browser"
+      return
+    # you can use execCommand as `execCommand <command>, <value>`
+    if ui? and not value?
+      value = ui
+      ui = false
+    @raw.execCommand command, ui, value
+  execCommandAndWait: (command, ui=undefined, value=undefined) ->
+    @execCommand command, ui, value
+    while @queryCommandState command then {}
+      # doesn't work in Chrome and limited in Firefox
+  style: (sets) ->
+    ### set style on selected text ###
+    if @raw.window.getSelection?
+      surroundCallback = (leaf) =>
+        parentNode = leaf.parentNode
+        if not leaf.previousSibling and not leaf.nextSibling
+          if parentNode.tagName?.toLowerCase() is 'span'
+            # Modify parentNode
+            for key, value of sets
+              if parentNode.style[key] is value
+                parentNode.style[key] = ''
+              else
+                parentNode.style[key] = value
+            if parentNode.getAttribute('style') is ''
+              # parentNode is no longer required
+              nextSibling = parentNode.nextSibling
+              grandParentNode = parentNode.parentNode
+              grandParentNode.removeChild parentNode
+              grandParentNode.insertBefore leaf, nextSibling
+            return
+        wrap = document.createElement 'span'
+        for key, value of sets
+          wrap.style[key] = value
+        nextSibling = leaf.nextSibling
+        parentNode.removeChild leaf
+        wrap.appendChild leaf
+        parentNode.insertBefore wrap, nextSibling
+      selection = @raw.window.getSelection()
+      @munipulator.execAtSelection selection, surroundCallback
+    else
+      if window.console?.error? then console.error "Richarea.style method doesn't support this browser."
   surround: (html) ->
+    ### surround selected text with html ###
     if @raw.window.getSelection?
       surroundCallback = (leaf) =>
         wrap = @munipulator.createElementFromHTML html
@@ -288,7 +311,7 @@ class @Richarea
         parentNode.insertBefore wrap, nextSibling
       selection = @raw.window.getSelection()
       @munipulator.execAtSelection selection, surroundCallback
-    else
+    else if @raw.document.selection?
       # This is an alternative function but not completely equal
       @raw.window.focus()
       range = @raw.document.selection.createRange()
@@ -297,204 +320,132 @@ class @Richarea
       container = document.createElement 'div'
       container.appendChild wrap
       range.pasteHTML container.innerHTML
-  # --- color
-  red: ->
-    @surround '<span style="color: red">'
-  blue: ->
-    @surround '<span style="color: blue">'
-  green: ->
-    @surround '<span style="color: green">'
+    else
+      if window.console?.error? then console.error "Richarea.surround method doesn't support this browser."
+  isSurroundSupport: ->
+    ###
+    detect that the surround method support the browser
+
+    return 0: not, 1: limited, 2: fully
+    ###
+    if @raw.window.getSelection?
+      return 2
+    else if @raw.document.selection?
+      return 1
+    return 0
+  # --- value
+  getValue: ->
+    return @raw.body.innerHTML
+  setValue: (value) ->
+    @raw.body.innerHTML = value
   # --- heading
   heading: (level) ->
-    @raw.formatBlock "<#{level}>"
+    if @isSurroundSupport() is 2
+      @surround "<h#{level}>"
+    else
+      @execCommandAndWait 'formatblock', "<h#{level}>"
   # --- decoration
   bold: ->
-    @surround '<strong>'
+    if @isSurroundSupport() > 0
+      @surround '<strong>'
+    else
+      @execCommandAndWait 'bold'
+  strong: @bold
   italic: ->
-    @surround '<em>'
+    if @isSurroundSupport() > 0
+      @surround '<em>'
+    else
+      @execCommandAndWait 'italic'
+  em: @italic
   underline: ->
-    @raw.underline()
+    if @isSurroundSupport() > 0
+      @surround '<ins>'
+    else
+      @execCommandAndWait 'underline'
+  strikethrough: ->
+    if @isSurroundSupport() > 0
+      @surround '<del>'
+    else
+      @execCommandAndWait 'strikethrough'
+  del: @strikethrough
+  subscript: ->
+    if @isSurroundSupport() > 0
+      @surround '<sub>'
+    else
+      @execCommandAndWait 'subscript'
+  superscript: ->
+    if @isSurroundSupport() > 0
+      @surround '<sup>'
+    else
+      @execCommandAndWait 'superscript'
   # --- color
   foreColor: (color) ->
-    @raw.foreColor color
-  backColor: (color) ->
-    if firefox or mozilla
-      @raw.hiliteColor color
+    if @isSurroundSupport() is 2
+      @style {color: color}
     else
-      @raw.backColor color
+      @execCommandAndWait 'forecolor', color
+  backColor: (color) ->
+    if @isSurroundSupport() is 2
+      @style {backgroundColor: color}
+    else
+      if @browser.browser is 'Firefox'
+        command = 'hilitecolor'
+      else
+        command = 'backcolor'
+    @execCommandAndWait command, color
   # --- font
   fontName: (name) ->
-    @raw.fontName name
+    if @isSurroundSupport() is 2
+      @style {fontFamily: name}
+    else
+      @execCommandAndWait 'fontname', name
   fontSize: (size) ->
-    @raw.fontSize size
+    if @isSurroundSupport() is 2
+      @style {fontSize: size}
+    else
+      @execCommandAndWait 'fontsize', size
   # --- indent
   indent: ->
-    @raw.indent()
+    @execCommandAndWait 'indent'
   outdent: ->
-    @raw.outdent()
+    @execCommandAndWait 'outdent'
   # --- insert
   insertLink: (href) ->
-    @raw.createLink href
+    @execCommandAndWait 'createlink', href
   insertImage: (src) ->
-    @raw.insertImage src
+    @execCommandAndWait 'insertimage', src
   insertOrderedList: ->
-    @raw.insertOrderedList null
+    @execCommandAndWait 'insertorderedlist'
   insertUnorderedList: ->
-    @raw.insertUnorderedList null
+    @execCommandAndWait 'insertunorderedlist'
+  insertHorizontalRule: ->
+    @execCommandAndWait 'inserthorizontalrule'
   # --- copy & paste
   copy: ->
-    @raw.copy()
+    @execCommandAndWait 'copy'
   cut: ->
-    @raw.cut()
+    @execCommandAndWait 'cut'
   paste: ->
-    @raw.paste()
+    @execCommandAndWait 'paste'
   delete: ->
-    @raw.delete()
+    @execCommandAndWait 'delete'
   # --- undo / redo
   undo: ->
-    @raw.undo()
+    @execCommandAndWait 'undo'
   redo: ->
-    @raw.redo()
+    @execCommandAndWait 'redo'
   # --- justify
   justifyCenter: ->
-    @raw.justifyCenter()
+    @execCommandAndWait 'justifycenter'
   justifyFull: ->
-    @raw.justifyFull()
+    @execCommandAndWait 'justifyfull'
   justifyLeft: ->
-    @raw.justifyLeft()
+    @execCommandAndWait 'justifyleft'
   justifyRight: ->
-    @raw.justifyRight()
-class SelectionMunipulator
-  # Ref: http://help.dottoro.com/ljcvtcaw.php
-  constructor: (@window) ->
-
-  getNextLeaf: (node) ->
-    while not node.nextSibling
-      node = node.parentNode
-      if not node
-        return node
-    leaf = node.nextSibling
-    while leaf.firstChild
-      leaf = leaf.firstChild
-    return leaf
-  getPreviousLeaf: (node) ->
-    while not node.previousSibling
-      node = node.parentNode
-      if not node
-        return node
-    leaf = node.previousSibling
-    while leaf.lastChild
-      leaf = leaf.lastChild
-    return leaf
-  isVisible: (node) ->
-    text = node.textContent
-    for c in text
-      if c isnt ' ' and c isnt '\t' and c isnt '\r' and c isnt '\n'
-        return true
-    return false
-  wrapLeaf: (node, element, force=false) ->
-    if not force and not @isVisible node
-      return
-    parentNode = node.parentNode
-    if not node.previousSibling and not node.nextSibling
-      if parentNode.tagName.toLowerCase() is element.tagName.toLowerCase()
-        # Remove parentNode
-        nextSibling = parentNode.nextSibling
-        superNode = parentNode.parentNode
-        superNode.removeChild parentNode
-        superNode.insertBefore node, nextSibling
-        return
-    nextSibling = node.nextSibling
-    parentNode.removeChild node
-    _element = element.cloneNode()
-    _element.appendChild node
-    parentNode.insertBefore _element, nextSibling
-  wrapLeafFromTo: (node, element, from ,to, force=false) ->
-    text = node.textContent
-    if not force and not @isVisible node
-      return
-    from = if from < 0 then 0 else from
-    to = if to < 0 then text.length else to
-    if from is 0 and to >= text.length
-      @wrapLeaf node, element, force
-      return
-
-    prefix = text.substring 0, from
-    content = text.substring from, to
-    suffix = text.substring to, text.length
-
-    parentNode = node.parentNode
-    nextSibling = node.nextSibling
-
-    parentNode.removeChild node
-
-    if prefix.length > 0
-      textNode = document.createTextNode prefix
-      parentNode.insertBefore textNode, nextSibling
-    if content.length > 0
-      textNode = document.createTextNode content
-      _element = element.cloneNode()
-      _element.appendChild textNode
-      parentNode.insertBefore _element, nextSibling
-    if suffix.length > 0
-      textNode = document.createTextNode suffix
-      parentNode.insertBefore textNode, nextSibling
-  wrapNode: (node, element, force=false) ->
-    childNode = node.firstChild
-    if not childNode
-      @wrapLeaf node, element, force
-      return
-    while childNode
-      nextSibling = childNode.nextSibling
-      @wrapNode childNode, element, force
-      childNode = nextSibling
-  wrapNodeFromTo: (node, element, from, to, force) ->
-    childNode = node.firstChild
-    if not childNode
-      @wrapLeafFromTo node, element, from, to, force
-      return
-    
-    for childNode in node.childNodes
-      @wrapNode childNode, element, force
-  wrapSelection: (element, force=false) ->
-    if @window.getSelection?
-      selectionRange = @window.getSelection()
-
-      if selectionRange.isCollapsed
-        if window.console?.warn? then console.warn "Please select some content first"
-      else
-        range = selectionRange.getRangeAt 0
-        # store the start and end points of the current selection, because the
-        # selection will be removed
-        startContainer = range.startContainer
-        startOffset = range.startOffset
-        endContainer = range.endContainer
-        endOffset = range.endOffset
-        # because of Opera, we need to remove the selection before modifying the
-        # DOM hierarchy
-        selectionRange.removeAllRanges()
-
-        if startContainer == endContainer
-          @wrapNodeFromTo startContainer, element, startOffset, endOffset, force
-        else
-          if startContainer.firstChild
-            startLeaf = startContainer.childNodes[startOffset]
-          else
-            startLeaf = @getNextLeaf startContainer
-            @wrapLeafFromTo startContainer, element, startOffset, -1, force
-          if endContainer.firstChild
-            if endOffset > 0
-              endLeaf = endContainer.childNodes[endOffset - 1]
-            else
-              endLeaf = @getPreviousLeaf endContainer
-          else
-            endLeaf = @getPreviousLeaf endContainer
-            @wrapLeafFromTo endContainer, element, 0, endOffset, force
-
-          while startLeaf
-            nextLeaf = @getNextLeaf startLeaf
-            @wrapLeaf startLeaf, element, force
-            if startLeaf == endLeaf then break
-            startLeaf = nextLeaf
-    else
-      if window.console?.warn? then console.warn "Internet Explorer before version 9 is not supported."
+    @execCommandAndWait 'justifyright'
+  # --- select
+  selectAll: ->
+    @execCommandAndWait 'selectall'
+  unselect: ->
+    @execCommandAndWait 'unselect'
+  # --- horizontalrule
