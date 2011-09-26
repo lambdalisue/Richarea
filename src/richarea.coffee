@@ -359,47 +359,47 @@ class @Richarea
     if @isSurroundSupport() is 2
       @surround "<h#{level}>"
     else
-      @execCommandAndWait 'formatblock', "<h#{level}>"
+      @execCommand 'formatblock', "<h#{level}>"
   # --- decoration
   bold: ->
     if @isSurroundSupport() > 0
       @surround '<strong>'
     else
-      @execCommandAndWait 'bold'
+      @execCommand 'bold'
   strong: @bold
   italic: ->
     if @isSurroundSupport() > 0
       @surround '<em>'
     else
-      @execCommandAndWait 'italic'
+      @execCommand 'italic'
   em: @italic
   underline: ->
     if @isSurroundSupport() > 0
       @surround '<ins>'
     else
-      @execCommandAndWait 'underline'
+      @execCommand 'underline'
   strikethrough: ->
     if @isSurroundSupport() > 0
       @surround '<del>'
     else
-      @execCommandAndWait 'strikethrough'
+      @execCommand 'strikethrough'
   del: @strikethrough
   subscript: ->
     if @isSurroundSupport() > 0
       @surround '<sub>'
     else
-      @execCommandAndWait 'subscript'
+      @execCommand 'subscript'
   superscript: ->
     if @isSurroundSupport() > 0
       @surround '<sup>'
     else
-      @execCommandAndWait 'superscript'
+      @execCommand 'superscript'
   # --- color
   foreColor: (color) ->
     if @isSurroundSupport() is 2
       @style {color: color}
     else
-      @execCommandAndWait 'forecolor', color
+      @execCommand 'forecolor', color
   backColor: (color) ->
     if @isSurroundSupport() is 2
       @style {backgroundColor: color}
@@ -408,60 +408,60 @@ class @Richarea
         command = 'hilitecolor'
       else
         command = 'backcolor'
-    @execCommandAndWait command, color
+    @execCommand command, color
   # --- font
   fontName: (name) ->
     if @isSurroundSupport() is 2
       @style {fontFamily: name}
     else
-      @execCommandAndWait 'fontname', name
+      @execCommand 'fontname', name
   fontSize: (size) ->
     if @isSurroundSupport() is 2
       @style {fontSize: size}
     else
-      @execCommandAndWait 'fontsize', size
+      @execCommand 'fontsize', size
   # --- indent
   indent: ->
-    @execCommandAndWait 'indent'
+    @execCommand 'indent'
   outdent: ->
-    @execCommandAndWait 'outdent'
+    @execCommand 'outdent'
   # --- insert
   insertLink: (href) ->
-    @execCommandAndWait 'createlink', href
+    @execCommand 'createlink', href
   insertImage: (src) ->
-    @execCommandAndWait 'insertimage', src
+    @execCommand 'insertimage', src
   insertOrderedList: ->
-    @execCommandAndWait 'insertorderedlist'
+    @execCommand 'insertorderedlist'
   insertUnorderedList: ->
-    @execCommandAndWait 'insertunorderedlist'
+    @execCommand 'insertunorderedlist'
   insertHorizontalRule: ->
-    @execCommandAndWait 'inserthorizontalrule'
+    @execCommand 'inserthorizontalrule'
   # --- copy & paste
   copy: ->
-    @execCommandAndWait 'copy'
+    @execCommand 'copy'
   cut: ->
-    @execCommandAndWait 'cut'
+    @execCommand 'cut'
   paste: ->
-    @execCommandAndWait 'paste'
+    @execCommand 'paste'
   delete: ->
-    @execCommandAndWait 'delete'
+    @execCommand 'delete'
   # --- undo / redo
   undo: ->
-    @execCommandAndWait 'undo'
+    @execCommand 'undo'
   redo: ->
-    @execCommandAndWait 'redo'
+    @execCommand 'redo'
   # --- justify
   justifyCenter: ->
-    @execCommandAndWait 'justifycenter'
+    @execCommand 'justifycenter'
   justifyFull: ->
-    @execCommandAndWait 'justifyfull'
+    @execCommand 'justifyfull'
   justifyLeft: ->
-    @execCommandAndWait 'justifyleft'
+    @execCommand 'justifyleft'
   justifyRight: ->
-    @execCommandAndWait 'justifyright'
+    @execCommand 'justifyright'
   # --- select
   selectAll: ->
-    @execCommandAndWait 'selectall'
+    @execCommand 'selectall'
   unselect: ->
-    @execCommandAndWait 'unselect'
+    @execCommand 'unselect'
   # --- horizontalrule
