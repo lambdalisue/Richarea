@@ -3,6 +3,7 @@ body{
     color: #3c3c3c;
 }
 div#wrapper{
+    position: relative;
     width: 980px;
     margin: 10px auto;
     padding: 20px;
@@ -19,6 +20,39 @@ header p{
 h2{
     padding-bottom: 5px;
     border-bottom: 1px solid #e4e4e4;
+}
+nav#relatedlinks{
+    position: absolute;
+    top: 20px; right: 20px;
+}
+nav#relatedlinks ul{
+    margin: 0;
+    padding: 0;
+}
+nav#relatedlinks ul li{
+    display: inline-block;
+    margin: 0 2px;
+    padding: 0;
+}
+nav#relatedlinks ul li a{
+    display: block;
+    width: 16px;
+    height: 16px;
+    text-indent: -10000px;
+    outline: none;
+    opacity: 0.6;
+}
+nav#relatedlinks ul li a:hover{
+    opacity: 1.0;
+}
+nav#relatedlinks ul li#github a{
+    background: url(./img/github_16.png) no-repeat;
+}
+nav#relatedlinks ul li#tumblr a{
+    background: url(img/tumblr_16.png) no-repeat;
+}
+nav#relatedlinks ul li#twitter a{
+    background: url(img/twitter_16.png) no-repeat;
 }
 ul#toolbar{
     margin: 5px 0;

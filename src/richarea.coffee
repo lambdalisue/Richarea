@@ -6,6 +6,7 @@ Cross browser richarea (iframe) munipulator script written in CoffeeScript
 :Author: Alisue (lambdalisue@hashnote.net)
 :License: MIT License
 :Url: http://github.com/lambdalisue/Richarea
+:Version: 0.1.0
 :Reference:
   - http://help.dottoro.com/ljcvtcaw.php
   - http://wiki.bit-hive.com/tomizoo/pg/JavaScript%20Range%A4%CE%BB%C8%A4%A4%CA%FD
