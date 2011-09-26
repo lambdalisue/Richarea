@@ -1,3 +1,17 @@
+###
+Richarea
+
+Cross browser richarea (iframe) munipulator script written in CoffeeScript
+
+:Author: Alisue (lambdalisue@hashnote.net)
+:License: MIT License
+:Url: http://github.com/lambdalisue/Richarea
+:Reference:
+  - http://help.dottoro.com/ljcvtcaw.php
+  - http://wiki.bit-hive.com/tomizoo/pg/JavaScript%20Range%A4%CE%BB%C8%A4%A4%CA%FD
+  - http://www.mozilla-japan.org/editor/midas-spec.html
+  - https://bugzilla.mozilla.org/show_bug.cgi?id=297494
+###
 class Browser
   ###
   CoffeeScript version of BrowserDetect found in http://www.quirksmode.org/js/detect.html
@@ -104,7 +118,7 @@ class DOMMunipulator
       return true
     c1 = lhs.tagName?.toLowerCase() is rhs.tagName?.toLowerCase()
     c2 = lhs.className is rhs.className
-    c3 = deepEqual lhs.style, rhs.style
+    c3 = lhs.getAttribute('style') is rhs.getAttribute('style')
     return c1 and c2 and c3
   dig: (node, reverse=false) ->
     ### dig to the node leaf and return ###
