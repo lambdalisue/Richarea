@@ -6,7 +6,7 @@ Cross browser richarea (iframe) munipulator script written in CoffeeScript
 :Author: Alisue (lambdalisue@hashnote.net)
 :License: MIT License
 :Url: http://github.com/lambdalisue/Richarea
-:Version: 0.1.1
+:Version: 0.1.1rc2
 :Reference:
   - http://help.dottoro.com/ljcvtcaw.php
   - http://wiki.bit-hive.com/tomizoo/pg/JavaScript%20Range%A4%CE%BB%C8%A4%A4%CA%FD
@@ -58,9 +58,9 @@ class RawController
   ###
   execCommand raw level controller
   ###
-  _hasLoaded: false
-  _callbacks: []
   constructor: (@iframe) ->
+    @_hasLoaded = false
+    @_callbacks = []
     if document.all?
       # storategy using 'onload' doesn't work in IE
       @iframe.onreadystatechange = =>
@@ -105,7 +105,10 @@ class RawController
       @window = @iframe.contentWindow
   ready: (callback) ->
     ### Add callback which will be called after iframe has loaded ###
-    @_callbacks.push callback
+    if @_hasLoaded
+      callback()
+    else
+      @_callbacks.push callback
   isReady: ->
     return @_hasLoaded
   queryCommandState: (command) ->
