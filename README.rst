@@ -9,7 +9,7 @@ Working Demo is available on http://demos.richarea.hashnote.net/
 :Author: Alisue (lambdalisue@hashnote.net)
 :License: MIT License
 :Url: http://github.com/lambdalisue/Richarea
-:Version: 0.1.0
+:Version: 0.1.1
 
 How to use
 ====================
