@@ -6,7 +6,7 @@ Cross browser richarea (iframe) munipulator script written in CoffeeScript
 :Author: Alisue (lambdalisue@hashnote.net)
 :License: MIT License
 :Url: http://github.com/lambdalisue/Richarea
-:Version: 0.1.1rc2
+:Version: 0.1.1rc3
 :Reference:
   - http://help.dottoro.com/ljcvtcaw.php
   - http://wiki.bit-hive.com/tomizoo/pg/JavaScript%20Range%A4%CE%BB%C8%A4%A4%CA%FD
@@ -89,8 +89,12 @@ class RawController
       if browser.browser is 'Explorer' and browser.version < 9
         # set height manually and add event to change height
         @body.style.height = "#{@iframe.offsetHeight}px"
-        @iframe.attachEvent 'onresize', =>
-          @body.style.height = "#{@iframe.offsetHeight}px"
+        # watch and reset size when iframe has resized
+        setTimeout =>
+          if @iframe? and @body? and @iframe.offsetHeight isnt @body.offsetHeight
+            @body.style.height = "#{@iframe.offsetHeight}px"
+          setTimeout arguments.callee, 100
+        , 100
         # NOTE: @body.style.cursor = 'text' doesn't work on IE
       else
         @body.style.cursor = 'text'
