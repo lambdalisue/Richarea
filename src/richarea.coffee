@@ -53,25 +53,61 @@ class Browser
     {string: navigator.userAgent, subString: 'iPhone', identify: 'iPhone/iPad'}
     {string: navigator.platform, subString: 'Linux', identify: 'Linux'}
   ]
+browser = new Browser
 class RawController
   ###
   execCommand raw level controller
   ###
+  _hasLoaded: false
+  _callbacks: []
   constructor: (@iframe) ->
-    if @iframe.contentDocument?
-      @document = @iframe.contentDocument
+    if document.all?
+      # storategy using 'onload' doesn't work in IE
+      @iframe.onreadystatechange = =>
+        if @iframe.readyState is 'complete'
+          @_hasLoaded = true
+          for callback in @_callbacks
+            callback()
+          @_callbacks = undefined
+          @iframe.onreadystatechange = null
     else
-      @document = @iframe.contentWindow.document
-    @document.writeln '<body></body>'
-    @body = @document.body
-    # turn off spellcheck in Firefox
-    if @body.spellcheck? then @body.spellcheck = false
-    # set content editable
-    if @body.contentEditable?
-      @body.contentEditable = true
-    else if @document.designMode?
-      @document.designMode = 'On'
-    @window = @iframe.contentWindow
+      @iframe.onload = =>
+        @_hasLoaded = true
+        # Call all callbacks
+        for callback in @_callbacks
+          callback()
+        @_callbacks = undefined
+    # Add construct code to ready event
+    @ready =>
+      if @iframe.contentDocument?
+        @document = @iframe.contentDocument
+      else
+        @document = @iframe.contentWindow.document
+      if not @document.body?
+        @document.writeln '<body></body>'
+      @body = @document.body
+      if browser.browser is 'Explorer' and browser.version < 9
+        # set height manually and add event to change height
+        @body.style.height = "#{@iframe.offsetHeight}px"
+        @iframe.attachEvent 'onresize', =>
+          @body.style.height = "#{@iframe.offsetHeight}px"
+        # NOTE: @body.style.cursor = 'text' doesn't work on IE
+      else
+        @body.style.cursor = 'text'
+        @body.style.height = '100%'
+      # turn off spellcheck in Firefox
+      if @body.spellcheck? then @body.spellcheck = false
+      # set content editable
+      if @body.contentEditable?
+        @body.contentEditable = true
+      else if @document.designMode?
+        @document.designMode = 'On'
+      @window = @iframe.contentWindow
+  ready: (callback) ->
+    ### Add callback which will be called after iframe has loaded ###
+    @_callbacks.push callback
+  isReady: ->
+    return @_hasLoaded
   queryCommandState: (command) ->
     ###
     --- Firefox
@@ -228,18 +264,28 @@ class @Richarea
     if window.jQuery? and @iframe instanceof jQuery
       @iframe = @iframe.get(0)
     # --- construct
-    @browser = new Browser
     @raw = new RawController @iframe
     @munipulator = new DOMMunipulator
-    # --- load default value from inner content
-    if @iframe.innerHTML?
-      html = @iframe.innerHTML
-      # --- replace escaped tags to real tag
-      html = html.split('&lt;').join '<'
-      html = html.split('&gt;').join '>'
-      @setValue html
+    # Add construct code
+    @raw.ready =>
+      # --- load default value from inner content
+      if @iframe.innerHTML?
+        html = @iframe.innerHTML
+        # --- replace escaped tags to real tag
+        html = html.split('&lt;').join '<'
+        html = html.split('&gt;').join '>'
+        @setValue html
+  isReady: ->
+    return @raw.isReady()
+  ready: (callback) ->
+    @raw.ready callback
+  getValue: ->
+    if @isReady() then return @raw.body.innerHTML
+  setValue: (value) ->
+    if @isReady() then @raw.body.innerHTML = value
+
   queryCommandState: (command) ->
-    switch @browser.browser
+    switch browser.browser
       # Chrome doesn't support queryCommandState
       when 'Chrome' then return null
       # Firefox support limited
@@ -252,7 +298,7 @@ class @Richarea
         if command not in WORKS then return null
     return @raw.queryCommandState command
   queryCommandEnabled: (command) ->
-    switch @browser.browser
+    switch browser.browser
       # Chrome doesn't support
       when 'Chrome' then return true
     return @raw.queryCommandEnabled command
@@ -349,11 +395,6 @@ class @Richarea
     else if @raw.document.selection?
       return 1
     return 0
-  # --- value
-  getValue: ->
-    return @raw.body.innerHTML
-  setValue: (value) ->
-    @raw.body.innerHTML = value
   # --- heading
   heading: (level) ->
     if @isSurroundSupport() is 2
@@ -404,7 +445,7 @@ class @Richarea
     if @isSurroundSupport() is 2
       @style {backgroundColor: color}
     else
-      if @browser.browser is 'Firefox'
+      if browser.browser is 'Firefox'
         command = 'hilitecolor'
       else
         command = 'backcolor'
