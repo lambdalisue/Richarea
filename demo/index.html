@@ -5,16 +5,15 @@
         <title>Richarea - Cross browser richarea munipulator library written in CoffeeScript</title>
         <link type="text/css" rel="stylesheet" href="css/style.css">
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-        <script type="text/javascript" src="http://jashkenas.github.com/coffee-script/extras/coffee-script.js"></script>
         <!--[if IE]>
+            <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>
             <script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
         <script type="text/javascript" src="js/richarea/richarea.js"></script>
         <script type="text/javascript">
             // The script use jQuery but Richarea.js is not jQuery dependent
             $(document).ready(function(){
-                richarea = $('#richarea');
-                richarea = new Richarea(richarea);
+                var richarea = new Richarea($('#richarea'));
                 // define update event callback
                 forwardUpdate = function(){
                     var $$ = $(richarea.raw.body);
@@ -25,19 +24,20 @@
                     richarea.setValue($$.val());
                 };
                 // bind events
-                $(richarea.raw.body).bind('keyup change click blur enter', forwardUpdate);
-                $('#preview').bind('keyup change click blur enter', reverseUpdate);
-                $('#toolbar li a').click(function(){
-                    var $$ = $(this);
-                    eval("richarea." + $$.attr('do') + ";");
+                richarea.ready(function(){
+                    $(richarea.raw.body).bind('keyup change click blur enter', forwardUpdate);
+                    $('#preview').bind('keyup change click blur enter', reverseUpdate);
+                    $('#toolbar li a').click(function(){
+                        var $$ = $(this);
+                        eval("richarea." + $$.attr('do') + ";");
+                        forwardUpdate();
+                    });
+                    // initial update
                     forwardUpdate();
                 });
-                // initial update
-                forwardUpdate();
             });
         </script>
         <script type="text/javascript">
-
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-25949804-1']);
         _gaq.push(['_setDomainName', 'hashnote.net']);
@@ -65,14 +65,15 @@
                 </ul>
             </nav>
             <!-- AddThis Button BEGIN -->
+            <!--
             <div class="addthis_toolbox addthis_default_style ">
             <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
             <a class="addthis_button_tweet"></a>
-
             <a class="addthis_counter addthis_pill_style"></a>
             </div>
             <script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
             <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=alisue"></script>
+            -->
             <!-- AddThis Button END -->
             <section id="content">
                 <h2>Demo</h2>
@@ -117,7 +118,7 @@
                     <li><a href="#" do="justifyRight()">Right</a></li>
                 </ul>
                 <div id="workspace">
-                    <iframe id="richarea" class="richarea">
+                    <iframe src="template.html" id="richarea" class="richarea">
                     </iframe>
                     <textarea id="preview">
                     </textarea>

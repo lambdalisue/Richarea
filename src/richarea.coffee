@@ -13,10 +13,11 @@ Cross browser richarea (iframe) munipulator script written in CoffeeScript
   - http://www.mozilla-japan.org/editor/midas-spec.html
   - https://bugzilla.mozilla.org/show_bug.cgi?id=297494
 ###
-class Browser
-  ###
-  CoffeeScript version of BrowserDetect found in http://www.quirksmode.org/js/detect.html
-  ###
+if not String.prototype.startsWith?
+  String.prototype.startsWith = (str) ->
+    return @lastIndexOf(str, 0) is 0
+class BrowserDetect
+  ### CoffeeScript version of BrowserDetect found in http://www.quirksmode.org/js/detect.html ###
   constructor: ->
     @browser = @searchString(@dataBrowser) or "An unknown browser"
     @version = @searchVersion(navigator.userAgent) or @searchVersion(navigator.appVersion) or "An unknown browser"
@@ -53,84 +54,182 @@ class Browser
     {string: navigator.userAgent, subString: 'iPhone', identify: 'iPhone/iPad'}
     {string: navigator.platform, subString: 'Linux', identify: 'Linux'}
   ]
-browser = new Browser
-class RawController
-  ###
-  execCommand raw level controller
-  ###
-  constructor: (@iframe) ->
-    @_hasLoaded = false
-    @_callbacks = []
-    if document.all?
-      # storategy using 'onload' doesn't work in IE
-      @iframe.onreadystatechange = =>
-        if @iframe.readyState is 'complete'
-          @_hasLoaded = true
-          for callback in @_callbacks
-            callback()
-          @_callbacks = undefined
-          @iframe.onreadystatechange = null
+class Hound
+  getNextNode: (node) ->
+    while not node.nextSibling
+      node = node.parentNode
+      if not node then return null
+    node = node.nextSibling
+  getNextLeaf: (node) ->
+    node = @getNextNode node
+    while node.firstChild?
+      node = node.firstChild
+    return node
+  getPreviousNode: (node) ->
+    while not node.previousSibling
+      node = node.parentNode
+      if not node then return null
+    node = node.previousSibling
+  getPreviousLeaf: (node) ->
+    node = @getPreviousNode node
+    while node.lastChild?
+      node = node.lastChild
+    return node
+  _hunt: (node, callback, start=undefined, end=undefined) ->
+    _hunt = (leaf, callback, start, end) =>
+      getTextContent = (node) ->
+        if node.textContent? then return node.textContent
+        if node.nodeType is 3 then return node.data
+        return node.innerText
+      text = getTextContent leaf
+      start ?= 0
+      end ?= text.length
+      if start is 0 and end is text.length
+        # no complicated works are required
+        return callback leaf
+      # split text to three part
+      left = text.substring 0, start
+      middle = text.substring start, end
+      right = text.substring end, text.length
+      # store parentNode and nextSibling
+      parentNode = leaf.parentNode
+      nextSibling = leaf.nextSibling
+      # remove leaf.
+      parentNode.removeChild leaf
+      # create element for each part
+      if left.length > 0
+        textNode = document.createTextNode left
+        parentNode.insertBefore textNode, nextSibling
+      if middle.length > 0
+        leaf = document.createTextNode middle
+        parentNode.insertBefore leaf, nextSibling
+      if right.length > 0
+        textNode = document.createTextNode right
+        parentNode.insertBefore textNode, nextSibling
+      # finally callback
+      return callback leaf
+    if not node.firstChild? 
+      return _hunt node, callback, start, end
+    for child in node.childNodes
+      @_hunt child, callback, start, end
+  hunt: (selection, callback) ->
+    if selection.isCollapsed then return
+    # Store start, end because selection will be removed
+    range = selection.getRangeAt 0
+    startContainer = range.startContainer
+    startOffset = range.startOffset
+    endContainer = range.endContainer
+    endOffset = range.endOffset
+    # because of Opera, we need to remove the selection before modifying the
+    # DOM hierarchy
+    selection.removeAllRanges()
+
+    if startContainer is endContainer
+      # no complicated code is required
+      return @_hunt startContainer, callback, startOffset, endOffset
+
+    if startContainer.firstChild?
+      startLeaf = startContainer.childNodes[startOffset]
     else
-      @iframe.onload = =>
-        @_hasLoaded = true
-        # Call all callbacks
-        for callback in @_callbacks
-          callback()
-        @_callbacks = undefined
+      # store startLeaf before any insertBefore is called
+      startLeaf = @getNextLeaf startContainer
+      @_hunt startContainer, callback, startOffset, undefined
+    if endContainer.firstChild?
+      if endOffset > 0
+        endLeaf = endContainer.childNodes[endOffset - 1]
+      else
+        endLeaf = @getPreviousLeaf endContainer
+    else
+      # store endLeaf before any insertBefore is called
+      endLeaf = @getPreviousLeaf endContainer
+      @_hunt endContainer, callback, undefined, endOffset
+    # hunt all rest of leaf between startLeaf and endLeaf
+    while startLeaf?
+      # store nextLeaf before any insertBefore is called
+      nextLeaf = @getNextLeaf startLeaf
+      @_hunt startLeaf, callback
+      if startLeaf is endLeaf then break
+      startLeaf = nextLeaf
+detected = new BrowserDetect
+hound = new Hound
+createElementFromHTML = (html) ->
+  ### create element from html ###
+  container = document.createElement 'div'
+  container.innerHTML = html
+  return container.firstChild
+class Rawarea
+  ### iframe low leve API wrapper class ###
+  constructor: (iframe) ->
+    @iframe = iframe
+    @_loaded = false
+    @_callbacks = []
     # Add construct code to ready event
     @ready =>
       if @iframe.contentDocument?
         @document = @iframe.contentDocument
       else
+        # IE doesn't have contentDocument
         @document = @iframe.contentWindow.document
       if not @document.body?
+        # iframe via createElement doesn't have body until
+        # the event has releaced. so need to create.
         @document.writeln '<body></body>'
       @body = @document.body
-      if browser.browser is 'Explorer' and browser.version < 9
-        # set height manually and add event to change height
-        @body.style.height = "#{@iframe.offsetHeight}px"
-        # watch and reset size when iframe has resized
+      @body.style.cursor = 'text'   # doesn't work in IE at all
+      @body.style.height = '100%'
+      if detected.browser is 'Explorer' and detected.version < 9
+        # in IE, height: 100% storategy doesn't work at all
+        # so set height manually and update it manually
+        # attacheEvent 'onresize', callback doesn't work at all as well
+        # so setTimeout storategy is necessary
+        updateBodyHeight = =>
+          @body.style.height = "#{@iframe.offsetHeight}px"
+        DELAY = 100
         setTimeout =>
-          if @iframe? and @body? and @iframe.offsetHeight isnt @body.offsetHeight
-            @body.style.height = "#{@iframe.offsetHeight}px"
-          setTimeout arguments.callee, 100
-        , 100
-        # NOTE: @body.style.cursor = 'text' doesn't work on IE
-      else
-        @body.style.cursor = 'text'
-        @body.style.height = '100%'
-      # turn off spellcheck in Firefox
+          if @iframe?.offsetHeight isnt @body?.offsetHeight
+            updateBodyHeight()
+          setTimeout arguments.callee, DELAY
+        , DELAY
+      # turn off spellcheck in firefox
       if @body.spellcheck? then @body.spellcheck = false
-      # set content editable
+      # set contentEditable
       if @body.contentEditable?
         @body.contentEditable = true
-      else if @document.designMode?
+      else if @document.designMode?   # for old browser
         @document.designMode = 'On'
+      else
+        if window.console?.error? then console.error 'This browser doesn\'t support contentEditable nor designMode'
       @window = @iframe.contentWindow
-  ready: (callback) ->
-    ### Add callback which will be called after iframe has loaded ###
-    if @_hasLoaded
-      callback()
+    # Add onloadCallback to iframe onload event
+    onloadCallback = =>
+      @_loaded = true
+      callback() for callback in @_callbacks
+      @_callbacks = undefined
+    if @iframe.getAttribute('src')?
+      if detected.browser is 'Explorer' and detected.version < 9
+        # I know attachEvent but in IE, onload storategy doesn't work at all
+        @iframe.attachEvent 'onreadystatechange', =>
+          if @iframe.readyState is 'complete'
+            @iframe.onreadystatechange = null
+            onloadCallback()
+      else
+        @iframe.addEventListener 'load', =>
+          onloadCallback()
+        , false
     else
-      @_callbacks.push callback
-  isReady: ->
-    return @_hasLoaded
+      onloadCallback()
+  ready: (callback=undefined) ->
+    ### add callback or exec callback depend on the iframe has loaded ###
+    if not callback? then return @_loaded
+    if @_loaded then return callback()
+    else @_callbacks.push callback
+  getValue: ->
+    if @ready() then @body.innerHTML
+  setValue: (value) ->
+    if @ready() then @body.innerHTML = value
+  execCommand: (command, ui=false, value=null) ->
+    return @document.execCommand command, ui, value
   queryCommandState: (command) ->
-    ###
-    --- Firefox
-      There is a limitation to use this command on firefox
-      See: https://bugzilla.mozilla.org/show_bug.cgi?id=297494
-
-      WORKS_ON_FIREFOX = [
-        'bold', 'insertorderlist', 'insertunorderedlist', 'italic',
-        'justifycenter', 'justifyfull', 'justifyleft', 'justifyright',
-        'strikethrough', 'subscript', 'superscript', 'underline', 'unlink'
-      ]
-
-    --- Google Chrome
-      The command doesn't work on Chrome
-      See: http://code.google.com/p/chromium/issues/detail?id=31316
-    ###
     return @document.queryCommandState command
   queryCommandEnabled: (command) ->
     return @document.queryCommandEnabled command
@@ -140,140 +239,13 @@ class RawController
     return @document.queryCommandSupported command
   queryCommandValue: (command) ->
     return @document.queryCommandValue command
-  execCommand: (command, ui=false, value=null) ->
-    @document.execCommand command, ui, value
-class DOMMunipulator
-  ###
-  DOM Munipulator
-  ###
-  isLeaf: (node) ->
-    return not node.firstChild?
-  createElementFromHTML: (html) ->
-    container = document.createElement 'div'
-    container.innerHTML = html
-    return container.firstChild
-  compare: (lhs, rhs) ->
-    deepEqual = (lhs, rhs) ->
-      for key, value of lhs
-        if value instanceof Object
-          result = deepEqual value, rhs[key]
-        else
-          result = value is rhs[key]
-        if not result then return false
-      return true
-    c1 = lhs.tagName?.toLowerCase() is rhs.tagName?.toLowerCase()
-    c2 = lhs.className is rhs.className
-    c3 = lhs.getAttribute('style') is rhs.getAttribute('style')
-    return c1 and c2 and c3
-  dig: (node, reverse=false) ->
-    ### dig to the node leaf and return ###
-    child = if reverse then 'lastChild' else 'firstChild'
-    while not @isLeaf node
-      node = node[child]
-    return node
-  next: (node, dig=false) ->
-    ### get next node/leaf. dig to the node leaf when `dig` is true ###
-    while not node.nextSibling
-      node = node.parentNode
-      if not node then return null
-    node = node.nextSibling
-    if dig
-      # dig to the node leaf
-      node = @dig node, false
-    return node
-  previous: (node, dig=false) ->
-    ### get previous node/leaf. dig to the node leaf when `dig` is true ###
-    while not node.previousSibling
-      node = node.parentNode
-      if not node then return null
-    node = node.previousSibling
-    if dig
-      # dig to the node leaf
-      node = @dig node, true
-    return node
-  execAtLeaf: (leaf, callback, start=undefined, end=undefined) ->
-    text = leaf.textContent
-    start ?= 0
-    end ?= text.length
-    if start is 0 and end is text.length
-      callback leaf
-    else
-      left = text.substring 0, start
-      middle = text.substring start, end
-      right = text.substring end, text.length
-      # store parentNode and nextSibling
-      parentNode = leaf.parentNode
-      nextSibling = leaf.nextSibling
-      # remove node
-      parentNode.removeChild leaf
-      # create element for each part
-      if left.length > 0
-        textNode = document.createTextNode left
-        parentNode.insertBefore textNode, nextSibling
-      if middle.length > 0
-        textNode = document.createTextNode middle
-        parentNode.insertBefore textNode, nextSibling
-        leaf = textNode
-      if right.length > 0
-        textNode = document.createTextNode right
-        parentNode.insertBefore textNode, nextSibling
-      callback leaf
-  execAtNode: (node, callback, start=undefined, end=undefined) ->
-    if @isLeaf node
-      @execAtLeaf node, callback, start, end
-    else
-      for child in node.childNodes
-        @execAtNode child, callback
-  execAtSelection: (selection, callback) ->
-    if selection.isCollapsed
-      if window.console?.warn? then console.warn "Nothing has selected"
-    else
-      range = selection.getRangeAt 0
-      startContainer = range.startContainer
-      startOffset = range.startOffset
-      endContainer = range.endContainer
-      endOffset = range.endOffset
-      # because of Opera, we need to remove the selection before modifying the
-      # DOM hierarchy
-      selection.removeAllRanges()
-      
-      if startContainer is endContainer
-        # selected range is on same node
-        @execAtNode startContainer, callback, startOffset, endOffset
-      else
-        if not @isLeaf startContainer
-          startLeaf = startContainer.childNodes[startOffset]
-        else
-          # store startLeaf to exec rest leafs
-          startLeaf = @next startContainer, true
-          # exec at first leaf with offset
-          @execAtLeaf startContainer, callback, startOffset, undefined
-        if not @isLeaf endContainer
-          if endOffset > 0
-            endLeaf = endContainer.childNodes[endOffset - 1]
-          else
-            endLeaf = @previous endContainer, true
-        else
-          # store endLeaf to exec rest leafs
-          endLeaf = @previous endContainer, true
-          # exec at last leaf with offset
-          @execAtLeaf endContainer, callback, undefined, endOffset
-        # exec at all rest of leafs
-        while startLeaf
-          # store nextLeaf before execute
-          nextLeaf = @next startLeaf, true
-          # exec at current leaf
-          @execAtLeaf startLeaf, callback
-          if startLeaf is endLeaf then break
-          startLeaf = nextLeaf
 class @Richarea
   constructor: (@iframe) ->
     if window.jQuery? and @iframe instanceof jQuery
+      # quickly convert jQuery object to JavaScript element
       @iframe = @iframe.get(0)
     # --- construct
-    @raw = new RawController @iframe
-    @munipulator = new DOMMunipulator
-    # Add construct code
+    @raw = new Rawarea @iframe
     @raw.ready =>
       # --- load default value from inner content
       if @iframe.innerHTML?
@@ -282,20 +254,15 @@ class @Richarea
         html = html.split('&lt;').join '<'
         html = html.split('&gt;').join '>'
         @setValue html
-  isReady: ->
-    return @raw.isReady()
-  ready: (callback) ->
-    @raw.ready callback
+  ready: (callback=undefined) ->
+    return @raw.ready callback
   getValue: ->
-    if @isReady() then return @raw.body.innerHTML
+    return @raw.getValue()
   setValue: (value) ->
-    if @isReady() then @raw.body.innerHTML = value
-
+    @raw.setValue value
   queryCommandState: (command) ->
-    switch browser.browser
-      # Chrome doesn't support queryCommandState
+    switch detected.browser
       when 'Chrome' then return null
-      # Firefox support limited
       when 'Firefox'
         WORKS = [
           'bold', 'insertorderlist', 'insertunorderedlist', 'italic',
@@ -305,8 +272,7 @@ class @Richarea
         if command not in WORKS then return null
     return @raw.queryCommandState command
   queryCommandEnabled: (command) ->
-    switch browser.browser
-      # Chrome doesn't support
+    switch detected.browser
       when 'Chrome' then return true
     return @raw.queryCommandEnabled command
   queryCommandIndeterm: (command) ->
@@ -319,155 +285,105 @@ class @Richarea
     # check the command is available or not
     if not @queryCommandEnabled command
       if window.console?.warn? then console.warn "#{command} is not enabled in this browser"
-      return
-    # you can use execCommand as `execCommand <command>, <value>`
-    if ui? and not value?
-      value = ui
-      ui = false
     @raw.execCommand command, ui, value
-  execCommandAndWait: (command, ui=undefined, value=undefined) ->
-    @execCommand command, ui, value
-    while @queryCommandState command then {}
-      # doesn't work in Chrome and limited in Firefox
-  style: (sets) ->
-    ### set style on selected text ###
-    if @raw.window.getSelection?
-      surroundCallback = (leaf) =>
-        parentNode = leaf.parentNode
-        if not leaf.previousSibling and not leaf.nextSibling
-          if parentNode.tagName?.toLowerCase() is 'span'
-            # Modify parentNode
-            for key, value of sets
-              if parentNode.style[key] is value
-                parentNode.style[key] = ''
-              else
-                parentNode.style[key] = value
-            if parentNode.getAttribute('style') is ''
-              # parentNode is no longer required
-              nextSibling = parentNode.nextSibling
-              grandParentNode = parentNode.parentNode
-              grandParentNode.removeChild parentNode
-              grandParentNode.insertBefore leaf, nextSibling
-            return
-        wrap = document.createElement 'span'
-        for key, value of sets
-          wrap.style[key] = value
-        nextSibling = leaf.nextSibling
-        parentNode.removeChild leaf
-        wrap.appendChild leaf
-        parentNode.insertBefore wrap, nextSibling
-      selection = @raw.window.getSelection()
-      @munipulator.execAtSelection selection, surroundCallback
-    else
-      if window.console?.error? then console.error "Richarea.style method doesn't support this browser."
   surround: (html) ->
     ### surround selected text with html ###
     if @raw.window.getSelection?
       surroundCallback = (leaf) =>
-        wrap = @munipulator.createElementFromHTML html
-        parentNode = leaf.parentNode
-        if not leaf.previousSibling and not leaf.nextSibling
-          if @munipulator.compare parentNode, wrap
+        wrapNode = createElementFromHTML html
+        wrapNodeTagName = wrapNode.tagName.toLowerCase()
+        cursorNode = leaf
+        while cursorNode.parentNode? and not cursorNode.previousSibling? and not cursorNode.nextSibling?
+          parentNode = cursorNode.parentNode
+          parentNodeTagName = parentNode.tagName.toLowerCase()
+          if parentNodeTagName is wrapNodeTagName
             # Remove parentNode
             nextSibling = parentNode.nextSibling
             grandParentNode = parentNode.parentNode
             grandParentNode.removeChild parentNode
-            grandParentNode.insertBefore leaf, nextSibling
+            grandParentNode.insertBefore cursorNode, nextSibling
             return
+          if parentNodeTagName.startsWith('h') and wrapNodeTagName.startsWith('h')
+            # Convert parentNode because heading level can be convert
+            wrapNode.appendChild cursorNode
+            nextSibling = parentNode.nextSibling
+            grandParentNode = parentNode.parentNode
+            grandParentNode.removeChild parentNode
+            grandParentNode.insertBefore wrapNode, nextSibling
+            return
+          cursorNode = parentNode
         nextSibling = leaf.nextSibling
+        parentNode = leaf.parentNode
         parentNode.removeChild leaf
-        wrap.appendChild leaf
-        parentNode.insertBefore wrap, nextSibling
+        wrapNode.appendChild leaf
+        parentNode.insertBefore wrapNode, nextSibling
       selection = @raw.window.getSelection()
-      @munipulator.execAtSelection selection, surroundCallback
-    else if @raw.document.selection?
-      # This is an alternative function but not completely equal
-      @raw.window.focus()
-      range = @raw.document.selection.createRange()
-      wrap = @munipulator.createElementFromHTML html
-      wrap.innerHTML = range.htmlText
-      container = document.createElement 'div'
-      container.appendChild wrap
-      range.pasteHTML container.innerHTML
+      hound.hunt selection, surroundCallback
     else
       if window.console?.error? then console.error "Richarea.surround method doesn't support this browser."
-  isSurroundSupport: ->
-    ###
-    detect that the surround method support the browser
-
-    return 0: not, 1: limited, 2: fully
-    ###
+  style: (css, type='span') ->
+    ### set style on selected text ###
     if @raw.window.getSelection?
-      return 2
-    else if @raw.document.selection?
-      return 1
-    return 0
+      surroundCallback = (leaf) =>
+        wrapNode = document.createElement 'span'
+        for key, value of css
+          wrapNode.style[key] = value
+        cursorNode = leaf
+        while cursorNode.parentNode? and not cursorNode.previousSibling? and not cursorNode.nextSibling?
+          parentNode = cursorNode.parentNode
+          parentNodeTagName = parentNode.tagName.toLowerCase()
+          if parentNodeTagName is 'span'
+            # modify parentNode
+            for key, value of css
+              # use wrapNode.style[key] insted of value because value can be
+              # automatically change duaring registration to element
+              if parentNode.style[key] is wrapNode.style[key] then parentNode.style[key] = '' else parentNode.style[key] = value
+            if parentNode.getAttribute('style') is ''
+              # the span is no longer required
+              nextSibling = parentNode.nextSibling
+              grandParentNode = parentNode.parentNode
+              grandParentNode.removeChild parentNode
+              grandParentNode.insertBefore cursorNode, nextSibling
+            return
+          cursorNode = parentNode
+        nextSibling = leaf.nextSibling
+        parentNode = leaf.parentNode
+        parentNode.removeChild leaf
+        wrapNode.appendChild leaf
+        parentNode.insertBefore wrapNode, nextSibling
+      selection = @raw.window.getSelection()
+      hound.hunt selection, surroundCallback
+    else
+      if window.console?.error? then console.error "Richarea.style method doesn't support this browser."
   # --- heading
   heading: (level) ->
-    if @isSurroundSupport() is 2
-      @surround "<h#{level}>"
-    else
-      @execCommand 'formatblock', "<h#{level}>"
+    @surround "<h#{level}>"
   # --- decoration
   bold: ->
-    if @isSurroundSupport() > 0
-      @surround '<strong>'
-    else
-      @execCommand 'bold'
+    @surround '<strong>'
   strong: @bold
   italic: ->
-    if @isSurroundSupport() > 0
-      @surround '<em>'
-    else
-      @execCommand 'italic'
+    @surround '<em>'
   em: @italic
   underline: ->
-    if @isSurroundSupport() > 0
-      @surround '<ins>'
-    else
-      @execCommand 'underline'
+    @surround '<ins>'
   strikethrough: ->
-    if @isSurroundSupport() > 0
-      @surround '<del>'
-    else
-      @execCommand 'strikethrough'
+    @surround '<del>'
   del: @strikethrough
   subscript: ->
-    if @isSurroundSupport() > 0
-      @surround '<sub>'
-    else
-      @execCommand 'subscript'
+    @surround '<sub>'
   superscript: ->
-    if @isSurroundSupport() > 0
-      @surround '<sup>'
-    else
-      @execCommand 'superscript'
+    @surround '<sup>'
   # --- color
   foreColor: (color) ->
-    if @isSurroundSupport() is 2
-      @style {color: color}
-    else
-      @execCommand 'forecolor', color
+    @style {color: color}
   backColor: (color) ->
-    if @isSurroundSupport() is 2
-      @style {backgroundColor: color}
-    else
-      if browser.browser is 'Firefox'
-        command = 'hilitecolor'
-      else
-        command = 'backcolor'
-    @execCommand command, color
+    @style {backgroundColor: color}
   # --- font
   fontName: (name) ->
-    if @isSurroundSupport() is 2
-      @style {fontFamily: name}
-    else
-      @execCommand 'fontname', name
+    @style {fontFamily: name}
   fontSize: (size) ->
-    if @isSurroundSupport() is 2
-      @style {fontSize: size}
-    else
-      @execCommand 'fontsize', size
+    @style {fontSize: size}
   # --- indent
   indent: ->
     @execCommand 'indent'
@@ -512,4 +428,3 @@ class @Richarea
     @execCommand 'selectall'
   unselect: ->
     @execCommand 'unselect'
-  # --- horizontalrule
