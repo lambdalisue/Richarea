@@ -8,6 +8,7 @@
         <!--[if IE]>
             <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>
             <script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+            <script type="text/javascript" src="js/richarea/ierange.js"></script>
         <![endif]-->
         <script type="text/javascript" src="js/richarea/richarea.js"></script>
         <script type="text/javascript">
@@ -25,8 +26,8 @@
                 };
                 // bind events
                 richarea.ready(function(){
-                    $(richarea.raw.body).bind('keyup change click blur enter', forwardUpdate);
-                    $('#preview').bind('keyup change click blur enter', reverseUpdate);
+                    $(richarea.raw.body).bind('keypress change click blur enter', forwardUpdate);
+                    $('#preview').bind('keypress change click blur enter', reverseUpdate);
                     $('#toolbar li a').click(function(){
                         var $$ = $(this);
                         eval("richarea." + $$.attr('do') + ";");
@@ -36,17 +37,12 @@
                     forwardUpdate();
                 });
             });
-        </script>
-        <script type="text/javascript">
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-25949804-1']);
-        _gaq.push(['_setDomainName', 'hashnote.net']);
-        _gaq.push(['_trackPageview']);
-        (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-        })();
+            function info(){
+                var iframe = $('#richarea').get(0);
+                var selection = iframe.contentWindow.getSelection();
+                var range = selection.getRangeAt(0);
+                console.info({startContainer: range.startContainer, startOffset: range.startOffset, endContainer: range.endContainer, endOffset: range.endOffset});
+            }
         </script>
     </head>
     <body>
@@ -64,61 +60,53 @@
                     <li id="twitter"><a href="http://twitter.com/lambdalisue" title="Twitter" target="_blank">Twitter</a></li>
                 </ul>
             </nav>
-            <!-- AddThis Button BEGIN -->
-            <!--
-            <div class="addthis_toolbox addthis_default_style ">
-            <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-            <a class="addthis_button_tweet"></a>
-            <a class="addthis_counter addthis_pill_style"></a>
-            </div>
-            <script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
-            <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=alisue"></script>
-            -->
-            <!-- AddThis Button END -->
             <section id="content">
                 <h2>Demo</h2>
                 <ul id="toolbar">
-                    <li><a href="#" do="heading(1)">H1</a></li>
-                    <li><a href="#" do="heading(2)">H2</a></li>
-                    <li><a href="#" do="heading(3)">H3</a></li>
+                    <li><a href="javascript:void(0)" do="heading(1)">H1</a></li>
+                    <li><a href="javascript:void(0)" do="heading(2)">H2</a></li>
+                    <li><a href="javascript:void(0)" do="heading(3)">H3</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="bold()">Bold</a></li>
-                    <li><a href="#" do="italic()">Italic</a></li>
-                    <li><a href="#" do="underline()">Under</a></li>
-                    <li><a href="#" do="strikethrough()">Strike</a></li>
-                    <li><a href="#" do="subscript()">Subscript</a></li>
-                    <li><a href="#" do="superscript()">Superscript</a></li>
+                    <li><a href="javascript:void(0)" do="bold()">Bold</a></li>
+                    <li><a href="javascript:void(0)" do="italic()">Italic</a></li>
+                    <li><a href="javascript:void(0)" do="underline()">Under</a></li>
+                    <li><a href="javascript:void(0)" do="strikethrough()">Strike</a></li>
+                    <li><a href="javascript:void(0)" do="subscript()">Subscript</a></li>
+                    <li><a href="javascript:void(0)" do="superscript()">Superscript</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="foreColor('#ff0000')">ForeColor Red</a></li>
-                    <li><a href="#" do="backColor('#0000ff')">BackColor Blue</a></li>
+                    <li><a href="javascript:void(0)" do="foreColor('#ff0000')">ForeColor Red</a></li>
+                    <li><a href="javascript:void(0)" do="backColor('#0000ff')">BackColor Blue</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="fontName('Times New Roman')">Times New Roman</a></li>
-                    <li><a href="#" do="fontSize('100px')">100px Font</a></li>
+                    <li><a href="javascript:void(0)" do="fontName('Times New Roman')">Times New Roman</a></li>
+                    <li><a href="javascript:void(0)" do="fontSize('100px')">100px Font</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="indent()">Indent</a></li>
-                    <li><a href="#" do="outdent()">Outdent</a></li>
+                    <li><a href="javascript:void(0)" do="indent()">Indent</a></li>
+                    <li><a href="javascript:void(0)" do="outdent()">Outdent</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="insertLink('http://www.google.com/')">Add Link</a></li>
-                    <li><a href="#" do="insertImage('http://p.tl/GNoA')">Add Image</a></li>
-                    <li><a href="#" do="insertOrderedList()">Add Ordered List</a></li>
-                    <li><a href="#" do="insertUnorderedList()">Add Unordered List</a></li>
-                    <li><a href="#" do="insertHorizontalRule()">Add HR</a></li>
+                    <li><a href="javascript:void(0)" do="insertLink('http://www.google.com/')">Add Link</a></li>
+                    <li><a href="javascript:void(0)" do="insertImage('http://p.tl/GNoA')">Add Image</a></li>
+                    <li><a href="javascript:void(0)" do="insertOrderedList()">Add Ordered List</a></li>
+                    <li><a href="javascript:void(0)" do="insertUnorderedList()">Add Unordered List</a></li>
+                    <li><a href="javascript:void(0)" do="insertHorizontalRule()">Add HR</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="copy()">Copy</a></li>
-                    <li><a href="#" do="cut()">Cut</a></li>
-                    <li><a href="#" do="paste()">Paste</a></li>
-                    <li><a href="#" do="delete()">Delete</a></li>
+                    <li><a href="javascript:void(0)" do="copy()">Copy</a></li>
+                    <li><a href="javascript:void(0)" do="cut()">Cut</a></li>
+                    <li><a href="javascript:void(0)" do="paste()">Paste</a></li>
+                    <li><a href="javascript:void(0)" do="delete()">Delete</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="undo()">Undo</a></li>
-                    <li><a href="#" do="redo()">Redo</a></li>
+                    <li><a href="javascript:void(0)" do="undo()">Undo</a></li>
+                    <li><a href="javascript:void(0)" do="redo()">Redo</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="#" do="justifyCenter()">Center</a></li>
-                    <li><a href="#" do="justifyFull()">Full</a></li>
-                    <li><a href="#" do="justifyLeft()">Left</a></li>
-                    <li><a href="#" do="justifyRight()">Right</a></li>
+                    <li><a href="javascript:void(0)" do="justifyCenter()">Center</a></li>
+                    <li><a href="javascript:void(0)" do="justifyFull()">Full</a></li>
+                    <li><a href="javascript:void(0)" do="justifyLeft()">Left</a></li>
+                    <li><a href="javascript:void(0)" do="justifyRight()">Right</a></li>
+                    <li><span class="separator">|</span></li>
+                    <li><a href="javascript:void(0)" onclick="info();">Info</a></li>
                 </ul>
                 <div id="workspace">
-                    <iframe src="template.html" id="richarea" class="richarea">
+                    <iframe frameborder='0' src="template.html"id="richarea" class="richarea">
+<b>AAAAA</b><i>BBBBB</i><u>CCCCC</u>
                     </iframe>
                     <textarea id="preview">
                     </textarea>

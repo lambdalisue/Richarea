@@ -62,7 +62,7 @@ class Hound
     node = node.nextSibling
   getNextLeaf: (node) ->
     node = @getNextNode node
-    while node.firstChild?
+    while node?.firstChild?
       node = node.firstChild
     return node
   getPreviousNode: (node) ->
@@ -72,14 +72,14 @@ class Hound
     node = node.previousSibling
   getPreviousLeaf: (node) ->
     node = @getPreviousNode node
-    while node.lastChild?
+    while node?.lastChild?
       node = node.lastChild
     return node
   _hunt: (node, callback, start=undefined, end=undefined) ->
     _hunt = (leaf, callback, start, end) =>
       getTextContent = (node) ->
         if node.textContent? then return node.textContent
-        if node.nodeType is 3 then return node.data
+        if node.nodeType is 3 then return node.nodeValue
         return node.innerText
       text = getTextContent leaf
       start ?= 0
@@ -123,11 +123,9 @@ class Hound
     # because of Opera, we need to remove the selection before modifying the
     # DOM hierarchy
     selection.removeAllRanges()
-
     if startContainer is endContainer
       # no complicated code is required
       return @_hunt startContainer, callback, startOffset, endOffset
-
     if startContainer.firstChild?
       startLeaf = startContainer.childNodes[startOffset]
     else
@@ -147,7 +145,9 @@ class Hound
     while startLeaf?
       # store nextLeaf before any insertBefore is called
       nextLeaf = @getNextLeaf startLeaf
-      @_hunt startLeaf, callback
+      # if startLeaf.parentNode is null that mean that node is already
+      # handled and removed from DOM tree
+      if startLeaf.parentNode? then @_hunt startLeaf, callback
       if startLeaf is endLeaf then break
       startLeaf = nextLeaf
 detected = new BrowserDetect
@@ -286,75 +286,89 @@ class @Richarea
     if not @queryCommandEnabled command
       if window.console?.warn? then console.warn "#{command} is not enabled in this browser"
     @raw.execCommand command, ui, value
+  getSelection: ->
+    if window.getSelection?
+      return @raw.window.getSelection()
+    else if document.selection?
+      return new DOMSelection @raw.document
+    return null
   surround: (html) ->
     ### surround selected text with html ###
-    if @raw.window.getSelection?
-      surroundCallback = (leaf) =>
-        wrapNode = createElementFromHTML html
-        wrapNodeTagName = wrapNode.tagName.toLowerCase()
-        cursorNode = leaf
-        while cursorNode.parentNode? and not cursorNode.previousSibling? and not cursorNode.nextSibling?
-          parentNode = cursorNode.parentNode
-          parentNodeTagName = parentNode.tagName.toLowerCase()
-          if parentNodeTagName is wrapNodeTagName
-            # Remove parentNode
-            nextSibling = parentNode.nextSibling
-            grandParentNode = parentNode.parentNode
-            grandParentNode.removeChild parentNode
-            grandParentNode.insertBefore cursorNode, nextSibling
-            return
-          if parentNodeTagName.startsWith('h') and wrapNodeTagName.startsWith('h')
-            # Convert parentNode because heading level can be convert
-            wrapNode.appendChild cursorNode
-            nextSibling = parentNode.nextSibling
-            grandParentNode = parentNode.parentNode
-            grandParentNode.removeChild parentNode
-            grandParentNode.insertBefore wrapNode, nextSibling
-            return
-          cursorNode = parentNode
-        nextSibling = leaf.nextSibling
-        parentNode = leaf.parentNode
-        parentNode.removeChild leaf
-        wrapNode.appendChild leaf
-        parentNode.insertBefore wrapNode, nextSibling
-      selection = @raw.window.getSelection()
+    surroundCallback = (leaf) =>
+      wrapNode = createElementFromHTML html
+      wrapNodeTagName = wrapNode.tagName.toLowerCase()
+      cursorNode = leaf
+      while cursorNode.parentNode? and not cursorNode.previousSibling? and not cursorNode.nextSibling?
+        parentNode = cursorNode.parentNode
+        parentNodeTagName = parentNode.tagName?.toLowerCase()
+        if parentNodeTagName is wrapNodeTagName
+          # Remove parentNode
+          nextSibling = parentNode.nextSibling
+          grandParentNode = parentNode.parentNode
+          grandParentNode.removeChild parentNode
+          grandParentNode.insertBefore cursorNode, nextSibling
+          return
+        if parentNodeTagName?.startsWith('h') and wrapNodeTagName.startsWith('h')
+          # Convert parentNode because heading level can be convert
+          wrapNode.appendChild cursorNode
+          nextSibling = parentNode.nextSibling
+          grandParentNode = parentNode.parentNode
+          grandParentNode.removeChild parentNode
+          grandParentNode.insertBefore wrapNode, nextSibling
+          return
+        if wrapNodeTagName.startsWith('h') and parentNodeTagName is 'p'
+          # Convert parentNode because heading level can be convert
+          wrapNode.appendChild cursorNode
+          nextSibling = parentNode.nextSibling
+          grandParentNode = parentNode.parentNode
+          grandParentNode.removeChild parentNode
+          grandParentNode.insertBefore wrapNode, nextSibling
+          return
+        cursorNode = parentNode
+      nextSibling = leaf.nextSibling
+      parentNode = leaf.parentNode
+      parentNode.removeChild leaf
+      wrapNode.appendChild leaf
+      parentNode.insertBefore wrapNode, nextSibling
+    selection = @getSelection()
+    if selection? 
       hound.hunt selection, surroundCallback
     else
       if window.console?.error? then console.error "Richarea.surround method doesn't support this browser."
   style: (css, type='span') ->
     ### set style on selected text ###
-    if @raw.window.getSelection?
-      surroundCallback = (leaf) =>
-        wrapNode = document.createElement 'span'
-        for key, value of css
-          wrapNode.style[key] = value
-        cursorNode = leaf
-        while cursorNode.parentNode? and not cursorNode.previousSibling? and not cursorNode.nextSibling?
-          parentNode = cursorNode.parentNode
-          parentNodeTagName = parentNode.tagName.toLowerCase()
-          if parentNodeTagName is 'span'
-            # modify parentNode
-            for key, value of css
-              # use wrapNode.style[key] insted of value because value can be
-              # automatically change duaring registration to element
-              if parentNode.style[key] is wrapNode.style[key] then parentNode.style[key] = '' else parentNode.style[key] = value
-            if parentNode.getAttribute('style') is ''
-              # the span is no longer required
-              nextSibling = parentNode.nextSibling
-              grandParentNode = parentNode.parentNode
-              grandParentNode.removeChild parentNode
-              grandParentNode.insertBefore cursorNode, nextSibling
-            return
-          cursorNode = parentNode
-        nextSibling = leaf.nextSibling
-        parentNode = leaf.parentNode
-        parentNode.removeChild leaf
-        wrapNode.appendChild leaf
-        parentNode.insertBefore wrapNode, nextSibling
-      selection = @raw.window.getSelection()
-      hound.hunt selection, surroundCallback
+    styleCallback = (leaf) =>
+      wrapNode = document.createElement 'span'
+      for key, value of css
+        wrapNode.style[key] = value
+      cursorNode = leaf
+      while cursorNode.parentNode? and not cursorNode.previousSibling? and not cursorNode.nextSibling?
+        parentNode = cursorNode.parentNode
+        parentNodeTagName = parentNode.tagName.toLowerCase()
+        if parentNodeTagName is 'span'
+          # modify parentNode
+          for key, value of css
+            # use wrapNode.style[key] insted of value because value can be
+            # automatically change duaring registration to element
+            if parentNode.style[key] is wrapNode.style[key] then parentNode.style[key] = '' else parentNode.style[key] = value
+          if parentNode.getAttribute('style') is ''
+            # the span is no longer required
+            nextSibling = parentNode.nextSibling
+            grandParentNode = parentNode.parentNode
+            grandParentNode.removeChild parentNode
+            grandParentNode.insertBefore cursorNode, nextSibling
+          return
+        cursorNode = parentNode
+      nextSibling = leaf.nextSibling
+      parentNode = leaf.parentNode
+      parentNode.removeChild leaf
+      wrapNode.appendChild leaf
+      parentNode.insertBefore wrapNode, nextSibling
+    selection = @getSelection()
+    if selection? 
+      hound.hunt selection, styleCallback
     else
-      if window.console?.error? then console.error "Richarea.style method doesn't support this browser."
+      if window.console?.error? then console.error "Richarea.surround method doesn't support this browser."
   # --- heading
   heading: (level) ->
     @surround "<h#{level}>"
