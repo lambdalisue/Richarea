@@ -24,27 +24,29 @@ $(document).ready(function(){
         forwardUpdate();
     });
 });
-window.getSelection = function(){
-    var selection, iframe;
-    iframe = $('#richarea').get(0);
-    if (iframe.contentWindow.getSelection !== null) {
-        selection = iframe.contentWindow.getSelection();
-    } else {
-        selection = new W3CSelection(iframe.contentWindow.document);
-    }
-    return selection;
-};
 window.info = function(){
-    var selection, range;
+    var getSelection, selection, range;
+    getSelection = function(){
+        var selection, iframe;
+        iframe = $('#richarea').get(0);
+        if (window.getSelection !== null && typeof window.getSelection === 'function') {
+            selection = iframe.contentWindow.getSelection();
+        } else {
+            selection = new W3CSelection(iframe.contentWindow.document);
+        }
+        return selection;
+    };
     selection = getSelection();
     range = selection.getRangeAt(0);
-    console.group('Selected Range Information');
-    console.log('Object: ', range);
-    console.log('startContainer: ', range.startContainer);
-    console.log('startOffset: ', range.startOffset);
-    console.log('endContainer: ', range.endContainer);
-    console.log('endOffset: ', range.endOffset);
-    console.groupEnd();
+    if (window.console !== null){
+        console.group('Selected Range Information');
+        console.log('Object: ', range);
+        console.log('startContainer: ', range.startContainer);
+        console.log('startOffset: ', range.startOffset);
+        console.log('endContainer: ', range.endContainer);
+        console.log('endOffset: ', range.endOffset);
+        console.groupEnd();
+    }
 };
 window.clear = function(){
     richarea.setValue('');

@@ -61,7 +61,10 @@ NodeUtils = partial NodeUtils,
       nextSibling = node.nextSibling
       parentNode = node.parentNode
       parentNode.removeChild node
-      wrapNode.appendChild node
+      try
+        wrapNode.appendChild node
+      catch e
+        # like img tag, wrapNode cannot contain element. so just replace it
       parentNode.insertBefore wrapNode, nextSibling
     _wrap2 = (node, wrapNode) ->
       parentNode = node.parentNode

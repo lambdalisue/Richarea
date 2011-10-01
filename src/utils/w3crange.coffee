@@ -88,7 +88,7 @@ class TextRangeUtils
       adaptBoundary domRange, textRange, false
       # quickfix by Alisue
       #   the storategy above makes miss endOffset
-      #   when document.body only have TextNode and whole text is selected
+      #   when startContainer === endContainer and it only have TextNode and whole text is selected
       if domRange.startContainer is domRange.endContainer and domRange.endOffset is 1 and DOMUtils.isDataContainerNode domRange.startContainer
         endOffset = DOMUtils.getNodeLength domRange.endContainer.firstChild
         domRange.setEnd domRange.endContainer, endOffset
@@ -96,14 +96,18 @@ class TextRangeUtils
       # return cursor position
       cursor = textRange.duplicate()
       parentNode = cursor.parentElement()
-      cursorNode = document.createElement 'span'
-      parentNode.insertBefore cursorNode, parentNode.firstChild
-      cursor.moveToElementText cursorNode
-      cursor.setEndPoint 'EndToEnd', textRange
-      offset = cursor.text.length
-      domRange.setStart parentNode, offset
-      domRange.setEnd parentNode, offset
-      parentNode.removeChild cursorNode
+      if DOMUtils.isDataNode parentNode
+        cursorNode = document.createElement 'span'
+        parentNode.insertBefore cursorNode, parentNode.firstChild
+        cursor.moveToElementText cursorNode
+        cursor.setEndPoint 'EndToEnd', textRange
+        offset = cursor.text.length
+        domRange.setStart parentNode, offset
+        domRange.setEnd parentNode, offset
+        parentNode.removeChild cursorNode
+      else
+        adaptBoundary domRange, textRange, true
+        domRange.setEnd domRange.startContainer, domRange.startOffset
     return domRange
   @convertFromW3CRange: (domRange) ->
     adoptEndPoint = (textRange, domRange, bStart) ->
@@ -277,16 +281,20 @@ class W3CRange
       @setStartAfter DOMUtils.findClosestAncestor(@commonAncestorContainer, @startContainer)
     @collapse true
     deleteSubtree = (iterator) ->
-      while iterator.next()
+      while iterator.next()?
         if iterator.hasPartialSubtree() then deleteSubtree(iterator.getSubtreeIterator()) else iterator.remove()
-      return deleteSubtree new RangeIterator range
+    deleteSubtree new RangeIterator range
   insertNode: (newNode) ->
     # set original anhor and insert node
     if DOMUtils.isDataNode @startContainer
       DOMUtils.splitDataNode @startContainer, @startOffset
       @startContainer.parentNode.insertBefore newNode, @startContainer.nextSibling
     else
-      @startContainer.insertBefore newNode, @startContainer.childNodes[@startOffset]
+      if @startOffset is @startContainer.childNodes.length
+        nextSibling = null
+      else
+        nextSibling = @startContainer.childNodes[@startOffset]
+      @startContainer.insertBefore newNode, nextSibling
     # resync start anchor
     @setStart @startContainer, @startOffset
   surroundContents: (newNode) ->
@@ -320,7 +328,7 @@ class W3CRange
       return 1
     return 1
   cloneRange: ->
-    range = new W3CRange @document
+    range = new W3CRange @_document
     range.setStart @startContainer, @startOffset
     range.setEnd @endContainer, @endOffset
     return range
