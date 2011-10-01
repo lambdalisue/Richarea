@@ -5,8 +5,7 @@ Copyright (c) 2009 Tim Cameron Ryan
 Released under the MIT/X License
 
 Re writed by Alisue (lambdalisue@hashnote.net) in 2011
-###
-###
+
 Range reference:
   http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html
   http://mxr.mozilla.org/mozilla-central/source/content/base/src/nsRange.cpp
@@ -20,7 +19,6 @@ Other links:
   http://jorgenhorstink.nl/2006/07/05/dom-range-implementation-in-ecmascript-completed/
   http://dylanschiemann.com/articles/dom2Range/dom2RangeExamples.html
 ###
-exports = {}
 class DOMUtils
   @findChildPosition: (node) ->
     counter = 0
@@ -56,7 +54,7 @@ class DOMUtils
     newNode.deleteData 0, offset
     node.parentNode.insertBefore newNode, node.nextSibling
 class TextRangeUtils
-  @convertToDOMRange: (textRange, document) ->
+  @convertToW3CRange: (textRange, document) ->
     adaptBoundary = (domRange, textRange, bStart) ->
       # iterate backwards through parent element to find anchor location
       cursorNode = document.createElement 'span'
@@ -80,18 +78,34 @@ class TextRangeUtils
         # element
         domRange[if bStart then 'setStartBefore' else 'setEndBefore'](cursorNode)
       cursorNode.parentNode.removeChild cursorNode
-    # return a DOM range
-    domRange = new DOMRange document
-    adaptBoundary domRange, textRange, true
-    adaptBoundary domRange, textRange, false
-    # quickfix by Alisue
-    #   the storategy above makes miss endOffset
-    #   when document.body only have TextNode and whole text is selected
-    if domRange.startContainer is domRange.endContainer and domRange.endOffset is 1 and DOMUtils.isDataContainerNode domRange.startContainer
-      endOffset = DOMUtils.getNodeLength domRange.endContainer.firstChild
-      domRange.setEnd domRange.endContainer, endOffset
+    # return a W3C DOM range
+    domRange = new W3CRange document
+    c1 = textRange.compareEndPoints('StartToEnd', textRange) isnt 0
+    c2 = textRange.parentElement().isContentEditable
+    if c1 and c2
+      # selection exists
+      adaptBoundary domRange, textRange, true
+      adaptBoundary domRange, textRange, false
+      # quickfix by Alisue
+      #   the storategy above makes miss endOffset
+      #   when document.body only have TextNode and whole text is selected
+      if domRange.startContainer is domRange.endContainer and domRange.endOffset is 1 and DOMUtils.isDataContainerNode domRange.startContainer
+        endOffset = DOMUtils.getNodeLength domRange.endContainer.firstChild
+        domRange.setEnd domRange.endContainer, endOffset
+    else if c2
+      # return cursor position
+      cursor = textRange.duplicate()
+      parentNode = cursor.parentElement()
+      cursorNode = document.createElement 'span'
+      parentNode.insertBefore cursorNode, parentNode.firstChild
+      cursor.moveToElementText cursorNode
+      cursor.setEndPoint 'EndToEnd', textRange
+      offset = cursor.text.length
+      domRange.setStart parentNode, offset
+      domRange.setEnd parentNode, offset
+      parentNode.removeChild cursorNode
     return domRange
-  @convertFromDOMRange: (domRange) ->
+  @convertFromW3CRange: (domRange) ->
     adoptEndPoint = (textRange, domRange, bStart) ->
       # find anchor node and offset
       container = domRange[if bStart then 'startContainer' else 'endContainer']
@@ -160,7 +174,7 @@ class RangeIterator
     return c1 and (c2 or c3)
   getSubtreeIterator: ->
     # create a new range
-    subRange = new DOMRange @range._document
+    subRange = new W3CRange @range._document
     subRange.selectNodeContents @_current
     # handle anchor points
     if DOMUtils.isAncestorOrSelf @_current, @range.startContainer
@@ -169,7 +183,7 @@ class RangeIterator
       subRange.setEnd @range.endContainer, @range.endOffset
     # return iterator
     return new RangeIterator subRange
-class @DOMRange
+class W3CRange
   @START_TO_START: 0
   @START_TO_END: 1
   @END_TO_END: 2
@@ -285,17 +299,17 @@ class @DOMRange
   compareBoundaryPoints: (how, sourceRange) ->
     # get anchors
     switch how
-      when DOMRange.START_TO_START, DOMRange.START_TO_END
+      when W3CRange.START_TO_START, W3CRange.START_TO_END
         containerA = @startContainer
         offsetA = @startOffset
-      when DOMRange.END_TO_END, DOMRange.END_TO_START
+      when W3CRange.END_TO_END, W3CRange.END_TO_START
         containerA = @endContainer
         offsetA = @endOffset
     switch how
-      when DOMRange.START_TO_START, DOMRange.END_TO_START
+      when W3CRange.START_TO_START, W3CRange.END_TO_START
         containerB = sourceRange.startContainer
         offsetB = sourceRange.startOffset
-      when DOMRange.START_TO_END, DOMRange.END_TO_END
+      when W3CRange.START_TO_END, W3CRange.END_TO_END
         containerB = sourceRange.endContainer
         offsetB = sourceRange.endOffset
     if containerA.sourceIndex < containerB.souceIndex
@@ -306,14 +320,14 @@ class @DOMRange
       return 1
     return 1
   cloneRange: ->
-    range = new DOMRange @document
+    range = new W3CRange @document
     range.setStart @startContainer, @startOffset
     range.setEnd @endContainer, @endOffset
     return range
   detach: ->
     # TODO: Releases Range from use to improve performance
   toString: ->
-    return TextRangeUtils.convertFromDOMRange(@).text
+    return TextRangeUtils.convertFromW3CRange(@).text
   createContextualFragment: (tagString) ->
     # parse the tag string in a context node
     content = if DOMUtils.isDataNode(@startContainer) then @startContainer.parentNode else @startContainer
@@ -324,7 +338,7 @@ class @DOMRange
     while content.firstChild?
       fragment.appendChild content.firstChild
     return fragment
-class @DOMSelection
+class W3CSelection
   constructor: (document) ->
     @rangeCount = 0
     # save document parameter
@@ -333,20 +347,23 @@ class @DOMSelection
     # add DOM selection handler
     @_document.attachEvent 'onselectionchange', =>
       @_selectionChangeHolder()
+    @_refreshProperties()
+  _selectionChangeHolder: ->
+    textRange = @_document.selection.createRange()
+    c1 = textRange.compareEndPoints('StartToEnd', textRange) isnt 0
+    c2 = textRange.parentElement().isContentEditable
+    if c1 and c2
+      @rangeCount = 1
+    else
+      @rangeCount = 0
+  _refreshProperties: ->
     # add isCollapsed attribute
     range = @getRangeAt 0
     @isCollapsed = if not range? or range.collapsed then true else false
-  _selectionChangeHolder: ->
-    textRange = @_document.selection.createRange()
-    @rangeCount = if @_selectionExists(textRange) then 1 else 0
-  _selectionExists: (textRange) ->
-    c1 = textRange.compareEndPoints('StartToEnd', textRange) isnt 0
-    c2 = textRange.parentElement().isContentEditable
-    return c1 and c2
   addRange: (range) ->
     # add range or combine with existing range
     selection = @_document.selection.createRange()
-    textRange = TextRangeUtils.convertFromDOMRange range
+    textRange = TextRangeUtils.convertFromW3CRange range
     if not @_selectionExists selection
       textRange.select()
     else
@@ -361,9 +378,13 @@ class @DOMSelection
   removeAllRanges: ->
     @_document.selection.empty()
   getRangeAt: (index) ->
-    textRange = @_document.selection.createRange()
-    if @_selectionExists textRange
-      return TextRangeUtils.convertToDOMRange textRange, @_document
-    return null
+    # I couldn't figure out but sometime (maybe if you attach W3CSelection to
+    # iframe and when iframe just loaded) @_document.selection.createRange()
+    # trigger unknown exception.
+    try
+      textRange = @_document.selection.createRange()
+      return TextRangeUtils.convertToW3CRange textRange, @_document
+    catch e
+      return null
   toString: ->
     return @_document.selection.createRange().text

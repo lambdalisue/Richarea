@@ -9,7 +9,7 @@ Working Demo is available on http://demos.richarea.hashnote.net/
 :Author: Alisue (lambdalisue@hashnote.net)
 :License: MIT License
 :Url: http://github.com/lambdalisue/Richarea
-:Version: 0.1.1rc3
+:Version: 0.1.2
 
 How to use
 ====================
@@ -45,9 +45,9 @@ CoffeeScript with jQuery + Firebug::
         $(->
             richarea = new Richarea $('#richarea')        
             console.log richarea.getValue()               
-            richarea.bold()
-            richarea.italic()
-            richarea.heading(1)
+            richarea.execCommand 'strong'
+            richarea.execCommand 'em'
+            richarea.execCommand 'h1'
             # ...whatever
         )
     </script>
@@ -59,16 +59,10 @@ JavaScript with Firebug::
             var richarea = document.getElementById('richarea');
             richarea = new Richarea(richarea);
             console.log(richarea.getValue());
-            richarea.bold();
-            richarea.italic();
-            richarea.heading(1);
+            richarea.execCommand('strong');
+            richarea.execCommand('em');
+            richarea.execCommand('h1');
             // ...whatever
         });
     </script>
 
-References
-====================
--   http://help.dottoro.com/ljcvtcaw.php
--   http://wiki.bit-hive.com/tomizoo/pg/JavaScript%20Range%A4%CE%BB%C8%A4%A4%CA%FD
--   http://www.mozilla-japan.org/editor/midas-spec.html
--   https://bugzilla.mozilla.org/show_bug.cgi?id=297494

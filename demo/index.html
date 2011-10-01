@@ -8,42 +8,25 @@
         <!--[if IE]>
             <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>
             <script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-            <script type="text/javascript" src="js/richarea/ierange.js"></script>
         <![endif]-->
-        <script type="text/javascript" src="js/richarea/richarea.js"></script>
-        <script type="text/javascript">
-            // The script use jQuery but Richarea.js is not jQuery dependent
-            $(document).ready(function(){
-                var richarea = new Richarea($('#richarea'));
-                // define update event callback
-                forwardUpdate = function(){
-                    var $$ = $(richarea.raw.body);
-                    $('#preview').val($$.html());
-                };
-                reverseUpdate = function(){
-                    var $$ = $('#preview');
-                    richarea.setValue($$.val());
-                };
-                // bind events
-                richarea.ready(function(){
-                    $(richarea.raw.body).bind('keypress change click blur enter', forwardUpdate);
-                    $('#preview').bind('keypress change click blur enter', reverseUpdate);
-                    $('#toolbar li a').click(function(){
-                        var $$ = $(this);
-                        eval("richarea." + $$.attr('do') + ";");
-                        forwardUpdate();
-                    });
-                    // initial update
-                    forwardUpdate();
-                });
-            });
-            function info(){
-                var iframe = $('#richarea').get(0);
-                var selection = iframe.contentWindow.getSelection();
-                var range = selection.getRangeAt(0);
-                console.info({startContainer: range.startContainer, startOffset: range.startOffset, endContainer: range.endContainer, endOffset: range.endOffset});
-            }
-        </script>
+        <!--
+        <script type="text/javascript" src="js/richarea/utils/w3crange.js"></script>
+        <script type="text/javascript" src="js/richarea/utils/detector.js"></script>
+        <script type="text/javascript" src="js/richarea/utils/partial.js"></script>
+        <script type="text/javascript" src="js/richarea/nodeutils/nodeutils.core.js"></script>
+        <script type="text/javascript" src="js/richarea/nodeutils/nodeutils.wrap.js"></script>
+        <script type="text/javascript" src="js/richarea/nodeutils/nodeutils.style.js"></script>
+        <script type="text/javascript" src="js/richarea/api/api.core.js"></script>
+        <script type="text/javascript" src="js/richarea/api/api.inline.js"></script>
+        <script type="text/javascript" src="js/richarea/api/api.block.js"></script>
+        <script type="text/javascript" src="js/richarea/api/api.insert.js"></script>
+        <script type="text/javascript" src="js/richarea/api/api.style.js"></script>
+        <script type="text/javascript" src="js/richarea/api/api.behavior.js"></script>
+        <script type="text/javascript" src="js/richarea/rawarea.js"></script>
+        <script type="text/javascript" src="js/richarea/richarea.core.js"></script>
+        -->
+        <script type="text/javascript" src="js/richarea/richarea.min.js"></script>
+        <script type="text/javascript" src="js/demo.js"></script>
     </head>
     <body>
         <div id="wrapper">
@@ -63,50 +46,72 @@
             <section id="content">
                 <h2>Demo</h2>
                 <ul id="toolbar">
-                    <li><a href="javascript:void(0)" do="heading(1)">H1</a></li>
-                    <li><a href="javascript:void(0)" do="heading(2)">H2</a></li>
-                    <li><a href="javascript:void(0)" do="heading(3)">H3</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="blockquote">Blockquote</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="unblockquote">Unblockquote</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="bold()">Bold</a></li>
-                    <li><a href="javascript:void(0)" do="italic()">Italic</a></li>
-                    <li><a href="javascript:void(0)" do="underline()">Under</a></li>
-                    <li><a href="javascript:void(0)" do="strikethrough()">Strike</a></li>
-                    <li><a href="javascript:void(0)" do="subscript()">Subscript</a></li>
-                    <li><a href="javascript:void(0)" do="superscript()">Superscript</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="h1">H1</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="h2">H2</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="h3">H3</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="h4">H4</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="h5">H5</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="h6">H6</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="foreColor('#ff0000')">ForeColor Red</a></li>
-                    <li><a href="javascript:void(0)" do="backColor('#0000ff')">BackColor Blue</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="p">Paragraph</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="pre">Pre</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="fontName('Times New Roman')">Times New Roman</a></li>
-                    <li><a href="javascript:void(0)" do="fontSize('100px')">100px Font</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="strong">Strong</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="em">Emphasize</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="ins">Insertion</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="del">Deletion</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="indent()">Indent</a></li>
-                    <li><a href="javascript:void(0)" do="outdent()">Outdent</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="sub">Subscript</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="sup">Superscript</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="insertLink('http://www.google.com/')">Add Link</a></li>
-                    <li><a href="javascript:void(0)" do="insertImage('http://p.tl/GNoA')">Add Image</a></li>
-                    <li><a href="javascript:void(0)" do="insertOrderedList()">Add Ordered List</a></li>
-                    <li><a href="javascript:void(0)" do="insertUnorderedList()">Add Unordered List</a></li>
-                    <li><a href="javascript:void(0)" do="insertHorizontalRule()">Add HR</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="indent">Indent</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="outdent">Outdent</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="copy()">Copy</a></li>
-                    <li><a href="javascript:void(0)" do="cut()">Cut</a></li>
-                    <li><a href="javascript:void(0)" do="paste()">Paste</a></li>
-                    <li><a href="javascript:void(0)" do="delete()">Delete</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="a">Link</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="img">Image</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="undo()">Undo</a></li>
-                    <li><a href="javascript:void(0)" do="redo()">Redo</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="hr">HR</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="ul">Unordered list</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="ol">Ordered list</a></li>
                     <li><span class="separator">|</span></li>
-                    <li><a href="javascript:void(0)" do="justifyCenter()">Center</a></li>
-                    <li><a href="javascript:void(0)" do="justifyFull()">Full</a></li>
-                    <li><a href="javascript:void(0)" do="justifyLeft()">Left</a></li>
-                    <li><a href="javascript:void(0)" do="justifyRight()">Right</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="forecolor" arg="red">Red</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="forecolor" arg="green">Green</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="forecolor" arg="blue">Blue</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="backcolor" arg="red">Red back</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="backcolor" arg="green">Green back</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="backcolor" arg="blue">Blue back</a></li>
                     <li><span class="separator">|</span></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontfamily" arg="serif">Serif</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontfamily" arg="sans-serif">Sans-Serif</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontfamily" arg="cursive">Cursive</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontfamily" arg="monospace">Monospace</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontfamily" arg="fantasy">Fantasy</a></li>
+                    <li><span class="separator">|</span></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="smaller">Smaller</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="xx-small">XX Small</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="x-small">X Small</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="small">Small</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="medium">Medium</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="large">Large</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="x-large">X Large</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="xx-large">XX Large</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="fontsize" arg="larger">Larger</a></li>
+                    <li><span class="separator">|</span></li>
+                    <li><a href="javascript:void(0)" class='do' do="justifyleft">Left</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="justifycenter">Center</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="justifyright">Right</a></li>
+                    <li><a href="javascript:void(0)" class='do' do="justifyfull">Full</a></li>
+                    <li><span class="separator">|</span></li>
+                    <li><a href="javascript:void(0)" do="undefined">Undefined</a></li>
                     <li><a href="javascript:void(0)" onclick="info();">Info</a></li>
+                    <li><a href="javascript:void(0)" onclick="clear();">Clear</a></li>
                 </ul>
                 <div id="workspace">
                     <iframe frameborder='0' src="template.html"id="richarea" class="richarea">
-<b>AAAAA</b><i>BBBBB</i><u>CCCCC</u>
+AAAAA
                     </iframe>
                     <textarea id="preview">
                     </textarea>

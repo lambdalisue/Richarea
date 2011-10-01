@@ -7,7 +7,7 @@ p, h1, h2, h3, h4, h5, h6, pre, blockquote{
     padding: 10px;
     background-color: #ffffff;
 }
-p:before, h1:before, h2:before, h3:before, h4:before, h5:before, h6:before, pre, blockquote{
+p:before, h1:before, h2:before, h3:before, h4:before, h5:before, h6:before, pre:before, blockquote:before{
     position: absolute;
     display: block;
     top: 1px; left: 1px;
