@@ -27,7 +27,6 @@ SPEC = 'spec'
 FILES = [
   'utils/detector',
   'utils/partial',
-  'utils/w3crange',
   'nodeutils/nodeutils.core',
   'nodeutils/nodeutils.wrap',
   'nodeutils/nodeutils.style',
@@ -40,7 +39,9 @@ FILES = [
   'rawarea',
   'richarea.core',
 ]
-REQUIRES = []
+REQUIRES = [
+  'requires/ierange.js',
+]
 HEADER = """
 Richarea - A JavaScript contentEditable munipulator library #{VERSION}
 http://github.com/lambdalisue/Richarea

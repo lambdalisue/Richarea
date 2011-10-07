@@ -2,12 +2,7 @@ class API
   constructor: (@raw) ->
     @utils = new NodeUtils
   execCommand: (type, arg, force=false) ->
-    getSelection = =>
-      if @raw.window.getSelection?
-        return @raw.window.getSelection()
-      else if @raw.document.selection?
-        return new W3CSelection @raw.document
-    selection = getSelection()
+    selection = @raw.window.getSelection()
     if not selection?
       if window.console?.error?
         console.error 'This browser does not support W3C type of range or Microsoft type of range.'

@@ -53,6 +53,13 @@ class Rawarea
       else
         if window.console?.error? then console.error 'This browser doesn\'t support contentEditable nor designMode'
       @window = @iframe.contentWindow
+      if not @window.getSelection?
+        @document.createRange = =>
+          return new DOMRange @document
+        selection = new DOMSelection @document
+        @window.getSelection = =>
+          @body.focus()
+          return selection
     # Add onloadCallback to iframe onload event
     onloadCallback = =>
       @_loaded = true
