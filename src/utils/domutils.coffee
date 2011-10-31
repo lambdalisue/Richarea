@@ -6,7 +6,7 @@ DOMUtils =
   BLOCK_ELEMENTS: [
       'address', 'dir', 'dl', 'form', 'h1', 'h2', 'h3',
       'h4', 'h5', 'h6', 'hr', 'menu', 'noframes',
-      'ol', 'p', 'pre', 'table', 'ul', 'xmp'
+      'ol', 'p', 'pre', 'table', 'ul', 'xmp',
     ]                              
   createElementFromHTML: (html) ->
     container = document.createElement 'div'
@@ -134,4 +134,4 @@ class RangeIterator:
       subRange.setStart @range.startContainer, @range.startOffset
     if DOMUtils.isAncestorOrSelf @_current, @range.endContainer
       subRange.setEnd @range.endContainer, @range.endOffset
-    return new RangeIterator subRange
+    return new RangeIterator(subRange)

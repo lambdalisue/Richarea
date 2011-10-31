@@ -27,6 +27,7 @@ SPEC = 'spec'
 FILES = [
   'utils/detector',
   'utils/partial',
+  'utils/domutils',
   'nodeutils/nodeutils.core',
   'nodeutils/nodeutils.wrap',
   'nodeutils/nodeutils.style',
@@ -36,6 +37,7 @@ FILES = [
   'api/api.insert',
   'api/api.style',
   'api/api.behavior',
+  'munipulator',
   'rawarea',
   'richarea.core',
 ]

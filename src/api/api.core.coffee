@@ -1,6 +1,7 @@
 class API
   constructor: (@raw) ->
     @utils = new NodeUtils
+    @munipulator = new Munipulator @raw.document
   execCommand: (type, arg, force=false) ->
     selection = @raw.window.getSelection()
     if not selection?
@@ -9,7 +10,8 @@ class API
       return false
     range = selection.getRangeAt 0
     switch type
-      when 'wrap' then @utils.wrapRange range, @utils.createElementFromHTML(arg), force
+      #when 'wrap' then @utils.wrapRange range, @utils.createElementFromHTML(arg), force
+      when 'wrap' then @munipulator.surroundRange range, DOMUtils.createElementFromHTML(arg)
       when 'unwrap' then @utils.unwrapRange range, arg, force
       when 'style' then @utils.styleRange range, arg, force
       when 'unstyle' then @utils.unstyleRange range, arg, force
