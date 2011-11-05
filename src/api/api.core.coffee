@@ -1,12 +1,16 @@
 class API
-  constructor: (@raw) ->
-    @selection = null
-  execCommand: (type, arg, force=false) ->
-    @selection = new Selection @raw.document if not @selection?
+  constructor: (@richarea) ->
+    @richarea.ready =>
+      @selection = new Selection @richarea.raw.document
+  execCommand: (type, arg) ->
     switch type
-      when 'wrap'
+      when 'surround'
         wrapNode = DOMUtils.createElementFromHTML(arg)
-        range = @selection.surroundSelection wrapNode
+        selection = @selection.getSelection()
+        range = selection.getRangeAt 0
+        selection.removeAllRanges()
+        prerange = Surround.surround range, wrapNode
+        range = @selection.createRange()
+        range = prerange.attach range
         @selection.setSelection range
     return true
-exports?.API = API

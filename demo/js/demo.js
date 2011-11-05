@@ -1,6 +1,6 @@
 // The script use jQuery but Richarea.js is not jQuery dependent
 $(document).ready(function(){
-    window.richarea = new Richarea($('#richarea'));
+    window.richarea = new Richarea($('#richarea').get(0));
     // define update event callback
     forwardUpdate = function(){
         var $$ = $(richarea.raw.body);

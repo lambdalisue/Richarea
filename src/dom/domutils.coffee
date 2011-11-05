@@ -1,3 +1,12 @@
+###
+DOM Munipulate utilities
+
+Author: Alisue (lambdalisue@hashnote.net)
+License: MIT License
+
+Copyright 2011 hashnote.net, Alisue allright reserved
+
+###
 DOMUtils =
   CONTAINER_ELEMENTS: [
       'body', 'div',  'center', 'blockquote', 'li', 'td',
@@ -48,9 +57,9 @@ DOMUtils =
     counter = 0
     counter++ while (node=node.previousSibling)?
     return counter
-  findUpstreamNode: (start, test, end) ->
+  findUpstreamNode: (start, test, end, strict=true) ->
     cursor = start
-    while cursor.parentNode? and cursor isnt end
+    while cursor.parentNode? and cursor isnt end and (not strict or DOMUtils.isIsolateNode(cursor))
       result = test(cursor)
       return result if result?
       cursor = cursor.parentNode
@@ -149,3 +158,4 @@ DOMUtils =
       parentNode.insertBefore node.firstChild, nextSibling
     parentNode.removeChild node
     return parentNode
+

@@ -1,9 +1,6 @@
-if require?
-  {partial} = require '../utils/partial'
-  {API} = require './api.core'
 API = partial API,
   a: (href) ->
-    @execCommand 'wrap', "<a href='#{href}'>"
+    @execCommand 'surround', "<a href='#{href}'>"
   img: (src) ->
     @execCommand 'insert', "<img src='#{src}'>"
   ul: ->
@@ -19,5 +16,3 @@ API = partial API,
     caption = if caption? then "\n<caption>#{caption}</caption>" else ''
     table = "<table>#{caption}\n#{trs.join '\n'}\n</table>"
     @execCommand 'insert', table
-exports?.API = API
-

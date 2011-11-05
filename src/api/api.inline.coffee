@@ -1,17 +1,13 @@
-if require?
-  {partial} = require '../utils/partial'
-  {API} = require './api.core'
 API = partial API,
   strong: ->
-    @execCommand 'wrap', '<strong>'
+    @execCommand 'surround', '<strong>'
   em: ->
-    @execCommand 'wrap', '<em>'
+    @execCommand 'surround', '<em>'
   ins: ->
-    @execCommand 'wrap', '<ins>'
+    @execCommand 'surround', '<ins>'
   del: ->
-    @execCommand 'wrap', '<del>'
+    @execCommand 'surround', '<del>'
   sub: ->
-    @execCommand 'wrap', '<sub>'
+    @execCommand 'surround', '<sub>'
   sup: ->
-    @execCommand 'wrap', '<sup>'
-exports?.API = API
+    @execCommand 'surround', '<sup>'

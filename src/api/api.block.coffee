@@ -1,15 +1,12 @@
-if require?
-  {partial} = require '../utils/partial'
-  {API} = require './api.core'
 API = partial API,
   # container
   blockquote: ->
-    @execCommand 'wrap', '<blockquote>', true
+    @execCommand 'surround', '<blockquote>'
   unblockquote: ->
-    @execCommand 'unwrap', ['blockquote'], true
+    @execCommand 'unsurround', '<blockquote>'
   # block
   heading: (level) ->
-    @execCommand 'wrap', "<h#{level}>"
+    @execCommand 'surround', "<h#{level}>"
   h1: -> @heading 1
   h2: -> @heading 2
   h3: -> @heading 3
@@ -17,8 +14,7 @@ API = partial API,
   h5: -> @heading 5
   h6: -> @heading 6
   p: ->
-    @execCommand 'wrap', '<p>'
+    @execCommand 'surround', '<p>'
   pre: ->
-    @execCommand 'wrap', '<pre>'
-exports?.API = API
+    @execCommand 'surround', '<pre>'
 

@@ -1,6 +1,3 @@
-if require?
-  {partial} = require '../utils/partial'
-  {API} = require './commandapi.core'
 API = partial API,
   forecolor: (color) ->
     @execCommand 'style', {color: color}
@@ -18,5 +15,3 @@ API = partial API,
     @execCommand 'style', {textAlign: 'right'}, true
   justifyfull: ->
     @execCommand 'style', {textAlign: 'justify'}, true
-exports?.API = API
-
