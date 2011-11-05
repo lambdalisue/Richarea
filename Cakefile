@@ -27,15 +27,14 @@ SPEC = 'spec'
 FILES = [
   'utils/detector',
   'utils/partial',
-  'nodeutils/nodeutils.core',
-  'nodeutils/nodeutils.wrap',
-  'nodeutils/nodeutils.style',
   'api/api.core',
   'api/api.inline',
   'api/api.block',
   'api/api.insert',
   'api/api.style',
   'api/api.behavior',
+  'domutils',
+  'selection',
   'rawarea',
   'richarea.core',
 ]

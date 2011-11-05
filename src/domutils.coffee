@@ -1,4 +1,21 @@
 DOMUtils =
+  CONTAINER_ELEMENTS: [
+      'body', 'div',  'center', 'blockquote', 'li', 'td',
+      #'del', 'ins', # most of time del and ins are used as inline
+    ]                              
+  BLOCK_ELEMENTS: [
+      'address', 'dir', 'dl', 'form', 'h1', 'h2', 'h3',
+      'h4', 'h5', 'h6', 'hr', 'menu', 'noframes',
+      'ol', 'p', 'pre', 'table', 'ul', 'xmp'
+    ]                              
+  isContainerNode: (node) ->
+    tagName = node.tagName?.toLowerCase()
+    return tagName and tagName in DOMUtils.CONTAINER_ELEMENTS
+  isBlockNode: (node) ->
+    tagName = node.tagName?.toLowerCase()
+    return tagName and tagName in DOMUtils.BLOCK_ELEMENTS
+  isInlineNode: (node) ->
+    return not DOMUtils.isContainerNode(node) and not DOMUtils.isBlockNode(node)
   createElementFromHTML: (html) ->
     container = document.createElement 'div'
     container.innerHTML = html
@@ -32,28 +49,27 @@ DOMUtils =
     counter++ while (node=node.previousSibling)?
     return counter
   findUpstreamNode: (start, test, end) ->
-    while cursor.parentNode? or cursor is end
+    cursor = start
+    while cursor.parentNode? and cursor isnt end
       result = test(cursor)
       return result if result?
       cursor = cursor.parentNode
     return null
   findNextNode: (node) ->
     test = (node) ->
-      return if node.nextSibling? then node else null
-    node = DOMUtils.findUpstreamNode node, test
-    return if node? then node.nextSibling else null
+      return if node.nextSibling? then node.nextSibling else null
+    return DOMUtils.findUpstreamNode node, test
   findPreviousNode: (node) ->
     test = (node) ->
-      return if node.previousSibling? then node else null
-    node = DOMUtils.findUpstreamNode node, test
-    return if node? then node.previousSibling else null
+      return if node.previousSibling? then node.previousSibling else null
+    return DOMUtils.findUpstreamNode node, test
   findNextDataNode: (node) ->
     node = DOMUtils.findNextNode node
-    node = node.firstChild while node and not DOMUtils.isDataNode(node)
+    node = node.firstChild while node? and node.firstChild?
     return node
   findPreviousDataNode: (node) ->
     node = DOMUtils.findPreviousNode node
-    node = node.lastChild while node and not DOMUtils.isDataNode(node)
+    node = node.lastChild while node? and node.lastChild?
     return node
   getNodeLength: (node) ->
     return if DOMUtils.isDataNode(node) then node.length else node.childNodes.length
@@ -93,3 +109,43 @@ DOMUtils =
       _textNode = doc.createTextNode right
       parentNode.insertBefore _textNode, nextSibling if DOMUtils.isVisibleNode _textNode
     return textNode
+  surroundNode: (node, wrapNode, start, end) ->
+    if DOMUtils.isDataNode(node)
+      node = DOMUtils.extractDataNode node, start, end
+      node = DOMUtils.surroundOutNode node, wrapNode
+      return node
+    else
+      start ?= 0
+      end ?= node.childNodes.length
+      for child in node.childNodes
+        DOMUtils.surroundNode child, wrapNode, start, end if child?
+  surroundOutNode: (node, wrapNode) ->
+    wrapNode = wrapNode.cloneNode(true)
+    nextSibling = node.nextSibling
+    parentNode = node.parentNode
+    parentNode.removeChild node
+    wrapNode.appendChild node
+    parentNode.insertBefore wrapNode, nextSibling
+    return wrapNode
+  surroundInNode: (node, wrapNode) ->
+    wrapNode = wrapNode.cloneNode(true)
+    while node.firstChild?
+      wrapNode.appendChild node.firstChild
+    node.appendChild wrapNode
+    return node
+  convertNode: (fromNode, toNode) ->
+    toNode = toNode.cloneNode(true)
+    while fromNode.firstChild?
+      toNode.appendChild fromNode.firstChild
+    nextSibling = fromNode.nextSibling
+    parentNode = fromNode.parentNode
+    parentNode.removeChild fromNode
+    parentNode.insertBefore toNode, nextSibling
+    return toNode
+  removeNode: (node) ->
+    nextSibling = node.nextSibling
+    parentNode = node.parentNode
+    while node.firstChild?
+      parentNode.insertBefore node.firstChild, nextSibling
+    parentNode.removeChild node
+    return parentNode
