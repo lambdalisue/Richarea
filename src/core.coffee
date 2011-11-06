@@ -21,7 +21,6 @@ class @Richarea
   @detector: new Detector
   constructor: (@iframe) ->
     @raw = @loader = null
-    @tidy = true
     @event = new Event
     @event.add 'ready', =>
       @raw = new ContentEditable @iframe
@@ -45,6 +44,8 @@ class @Richarea
         @_change()
       # Add API
       @api = new API @
+      # Tidy HTML
+      @tidy()
     if @iframe.getAttribute('src')?
       @loader = new Loader @iframe
       @loader.ready =>
@@ -52,11 +53,13 @@ class @Richarea
     else
       @event.call 'ready'
   _change: ->
-    HTMLTidy.tidy @raw.body, @raw.document if @tidy
+    @tidy()
     data = @raw.body.getAttribute('previousInnerHTML')
     if data isnt @raw.body.innerHTML
       @raw.body.setAttribute 'previousInnerHTML', @raw.body.innerHTML
       @event.call 'change'
+  tidy: ->
+    HTMLTidy.tidy @raw.body, @raw.document
   ready: (fn) ->
     if not @loader? or @loader.loaded()
       fn()
