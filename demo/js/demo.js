@@ -12,8 +12,8 @@ $(document).ready(function(){
     };
     // bind events
     richarea.ready(function(){
-        $(richarea.raw.body).bind('keypress change click blur enter', forwardUpdate);
-        $('#preview').bind('keypress change click blur enter', reverseUpdate);
+        richarea.event.add('change', forwardUpdate);
+        $('#preview').bind('blur', reverseUpdate);
         $('#toolbar li a.do').click(function(){
             var $$ = $(this);
             info();

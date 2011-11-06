@@ -11,126 +11,193 @@ Dependencies:
   - Prerange (selection.coffee)
 ###
 Surround = 
-  _surroundWithContainer: (range, wrapNode) ->
-    cursor = range.commonAncestorContainer
-    node = DOMUtils.surroundOutNode cursor, wrapNode
+  # surround node with cover node
+  # <node>xxx</node> -> <cover><node>xxx</node></cover>
+  out: (node, cover) ->
+    cover = cover.cloneNode false
+    nextSibling = node.nextSibling
+    parentNode = node.parentNode
+    cover.appendChild node
+    parentNode.insertBefore cover, nextSibling
+    return cover
+  # surround inside contents of node with cover node
+  # <node>xxx</node> -> <node><cover>xxx</cover></node>
+  in: (node, cover) ->
+    cover = cover.cloneNode false
+    while node.firstChild?
+      cover.appendChild node.firstChild
+    node.appendChild cover
+    return node
+  # replace surround node with cover node
+  # <node>xxx</node> -> <cover>xxx</cover>
+  replace: (node, cover) ->
+    cover = cover.cloneNode false
+    while node.firstChild
+      cover.appendChild node.firstChild
+    parentNode = node.parentNode
+    parentNode.insertBefore cover, node
+    parentNode.removeChild node
+    return cover
+  # remove surround node
+  # <node>xxx</node> -> xxx
+  remove: (node) ->
+    nextSibling = node.nextSibling
+    parentNode = node.parentNode
+    parentNode.removeChild node
+    while node.firstChild
+      parentNode.insertBefore node.firstChild, nextSibling
+    return parentNode
+  # surround each terminal node from start to end with cover node
+  # <start><A>xxx</A></start><B><C>xxx</C></B><end>xxx</end> ->
+  # <start><A><cover>xxx</cover></A></start><B><C><cover>xxx</cover></C></B><end><cover>xxx</cover></end>
+  each: (start, end, cover, exclude=[], fn=Surround.out) ->
+    _fn = (node) ->
+      fn node, cover if node not in exclude and DOMUtils.isVisibleNode node
+    DOMUtils.applyToAllTerminalNodes start, end, _fn
+  # research each terminal node from start to end with cover node
+  # return report list and each report has `node` and `found` attribute.
+  # `found` attribute set found compatible node with cover
+  research: (start, end, cover, exclude=[]) ->
+    coverTagName = cover.tagName.toLowerCase()
+    test = (node) -> node.tagName?.toLowerCase() is coverTagName
+    reports = []
+    fn = (node) ->
+      if node not in exclude and DOMUtils.isVisibleNode node
+        found = DOMUtils.findUpstreamNode node, test
+        reports.push {
+          node: node,
+          found: found
+        }
+    DOMUtils.applyToAllTerminalNodes start, end, fn
+    return reports
+  _container: (node, cover) ->
+    # find upstream container node
+    test = (node) -> DOMUtils.isBlockNode(node) and DOMUtils.isContainerNode(node.parentNode)
+    found = DOMUtils.findUpstreamNode node, test
+    # container node can contain anything so just surround in
+    node = Surround.out found, cover
+    # return Prerange instance
     prerange = new Prerange
     prerange.setStart node
     prerange.setEnd node
     return prerange
-  _surroundWithBlock: (range, wrapNode) ->
-    cursor = range.commonAncestorContainer
-    while cursor? and (DOMUtils.isInlineNode(cursor) or DOMUtils.isDataNode(cursor))
-      cursor = cursor.parentNode
-    if DOMUtils.isContainerNode(cursor)
-      node = DOMUtils.surroundInNode cursor, wrapNode
+  _containerRemove: (node, cover) ->
+    test = (node) -> DOMUtils.isEqual(node, cover)
+    found = DOMUtils.findUpstreamNode node, test
+    if found?
+      start = DOMUtils.findPreviousNode found
+      end = DOMUtils.findNextNode found
+      # remove found block
+      Surround.remove found
+      prerange = new Prerange
+      prerange.setStart DOMUtils.findNextNode(start)
+      prerange.setEnd DOMUtils.findPreviousNode(end)
+      return prerange
     else
-      if cursor.tagName?.toLowerCase() is wrapNode.tagName?.toLowerCase()
-        #node = DOMUtils.removeNode cursor
-        node = DOMUtils.convertNode cursor, document.createElement('p')
-      else
-        node = DOMUtils.convertNode cursor, wrapNode
-    prerange = new Prerange
-    prerange.setStart node
-    prerange.setEnd node
-    return prerange
-  _surroundWithInline: (range, wrapNode) ->
-    startContainer = range.startContainer
-    startOffset = range.startOffset
-    endContainer = range.endContainer
-    endOffset = range.endOffset
-    if startContainer is endContainer and DOMUtils.isDataNode startContainer
-      # TODO:
-      if startOffset is 0 and endOffset is DOMUtils.getNodeLength startContainer
-        test = (node) ->
-          if node.tagName?.toLowerCase() is wrapNode.tagName?.toLowerCase()
-            return node
-          return null
-        result = DOMUtils.findUpstreamNode startContainer, test
-        if result?
-          previousSibling = result.previousSibling
-          nextSibling = result.nextSibling
-          if previousSibling?
-            startOffset = DOMUtils.findChildPosition(previousSibling.nextSibling)
-          if nextSibling?
-            endOffset = DOMUtils.findChildPosition(nextSibling)
-          node = DOMUtils.removeNode result
-          prerange = new Prerange
-          prerange.setStart node, startOffset
-          prerange.setEnd node, endOffset
+      prerange = new Prerange
+      prerange.setStart node
+      prerange.setEnd node
+      return prerange
+  _block: (node, cover, paragraph=true) ->
+    # find upstream block node
+    test = (node) -> DOMUtils.isBlockNode node
+    found = DOMUtils.findUpstreamNode node, test
+    if found?
+      if DOMUtils.isEqual(found, cover)
+        if paragraph
+          # replace with paragraph block
+          node = Surround.replace found, document.createElement('p')
         else
-          node = DOMUtils.surroundNode startContainer, wrapNode, startOffset, endOffset
+          start = DOMUtils.findPreviousNode found
+          end = DOMUtils.findNextNode found
+          # remove found block
+          Surround.remove found
           prerange = new Prerange
-          prerange.setStart node
-          prerange.setEnd node
-        return prerange
+          prerange.setStart DOMUtils.findNextNode(start)
+          prerange.setEnd DOMUtils.findPreviousNode(end)
+          return prerange
       else
-        extracted = DOMUtils.extractDataNode startContainer, startOffset, endOffset
-        test = (node) ->
-          if node.tagName?.toLowerCase() is wrapNode.tagName?.toLowerCase()
-            return node
-          return null
-        result = DOMUtils.findUpstreamNode extracted, test, null, false
-        node = DOMUtils.removeNode result
-        test = (node) ->
-          if DOMUtils.isDataNode node
-            return node
-          return null
-        start = DOMUtils.findDownstreamNode node, test
-        cursor = start
-        while cursor?
-          cursor = DOMUtils.surroundNode cursor, wrapNode if cursor isnt extracted
-          cursor = DOMUtils.findNextDataNode cursor
-        prerange = new Prerange
-        prerange.setStart extracted
-        prerange.setEnd extracted
-        return prerange
+        # replace with cover block
+        node = Surround.replace found, cover
     else
-      getNodeInfo = (node) ->
-        test = (node) ->
-          if node.tagName?.toLowerCase() is wrapNode.tagName?.toLowerCase()
-            return node
-          return null
-        result = DOMUtils.findUpstreamNode(node, test)
-        value =
-          node: node
-          found: result
-      nodelist = []
-      if startContainer.firstChild?
-        start = startContainer.childNodes[startOffset]
-      else
-        start = DOMUtils.extractDataNode(startContainer, startOffset)
-      if endContainer.firstChild?
-        end = endContainer.childNodes[endOffset-1]
-      else
-        end = DOMUtils.extractDataNode(endContainer, null, endOffset)
-      cursor = start
-      while cursor?
-        nodelist.push getNodeInfo(cursor) if DOMUtils.isDataNode cursor
-        break if cursor is end
-        cursor = DOMUtils.findNextDataNode cursor
-      remove = true
-      for cursor in nodelist
-        if not cursor.found?
-          remove = false
-          break
-      if not remove
-        for cursor in nodelist
-          if not cursor.found? and DOMUtils.isVisibleNode(cursor.node)
-            DOMUtils.surroundNode cursor.node, wrapNode
-      else
-        for cursor in nodelist
-          if cursor.found?
-            DOMUtils.removeNode cursor.found
+      # find upstream container node
+      test = (node) -> DOMUtils.isContainerNode node
+      found = DOMUtils.findUpstreamNode node, test
+      # container node can contain anything so just surround in
+      node = Surround.in found, cover
+    prerange = new Prerange
+    prerange.setStart node
+    prerange.setEnd node
+    return prerange
+  _inline: (root, start, end, cover) ->
+    # find upstream compatible inline node
+    coverTagName = cover.tagName?.toLowerCase()
+    test = (node) -> node.tagName?.toLowerCase() is coverTagName
+    found = DOMUtils.findUpstreamNode root, test
+    if found?
+      # Most complicated pattern. This pattern have to handle out node of range
+      # as well (sometime). Remove found cover node and resurround each downstream
+      # terminal node of found cover node except selected range
+      # store firstChild and lastChild before remove found node
+      firstChild = found.firstChild
+      lastChild = found.lastChild
+      # Remove surround node
+      root = Surround.remove found
+      # find exclude nodes
+      exclude = []
+      fn = (node) ->
+        exclude.push node
+      DOMUtils.applyToAllTerminalNodes start, end, fn
+      # Re-surround except nodes in exclude
+      Surround.each firstChild, lastChild, cover, exclude
       prerange = new Prerange
       prerange.setStart start
       prerange.setEnd end
       return prerange
-  surround: (range, wrapNode) ->
-    if DOMUtils.isContainerNode(wrapNode)
-      prerange = Surround._surroundWithContainer(range, wrapNode)
-    else if DOMUtils.isBlockNode(wrapNode)
-      prerange = Surround._surroundWithBlock(range, wrapNode)
     else
-      prerange = Surround._surroundWithInline(range, wrapNode)
-    return prerange
+      # No inclusion cover node is found. Apply surround to each terminal node
+      reports = Surround.research start, end, cover
+      removeMode = true
+      for report in reports
+        if not report.found?
+          removeMode = false
+          break
+      if removeMode
+        for report in reports
+          if report.found?
+            Surround.remove report.found
+      else
+        for report in reports
+          if not report.found?
+            Surround.out report.node, cover
+      prerange = new Prerange
+      prerange.setStart start
+      prerange.setEnd end
+      return prerange
+  range: (range, cover, remove=false) ->
+    if DOMUtils.isContainerNode cover
+      if remove
+        return Surround._containerRemove range.commonAncestorContainer, cover
+      else
+        return Surround._container range.commonAncestorContainer, cover
+    else if DOMUtils.isBlockNode cover
+      return Surround._block range.commonAncestorContainer, cover
+    else
+      startContainer = range.startContainer
+      startOffset = range.startOffset
+      endContainer = range.endContainer
+      endOffset = range.endOffset
+      root = range.commonAncestorContainer
+      if startContainer is endContainer and DOMUtils.isDataNode startContainer
+        start = end = DOMUtils.extractDataNode(startContainer, startOffset, endOffset)
+        root = start.parentNode
+      else
+        if DOMUtils.isDataNode startContainer
+          start = DOMUtils.extractDataNode(startContainer, startOffset)
+        else
+          start = startContainer.childNodes[startOffset]
+        if DOMUtils.isDataNode endContainer
+          end = DOMUtils.extractDataNode(endContainer, null, endOffset)
+        else
+          end = endContainer.childNodes[endOffset-1]
+      return Surround._inline root, start, end, cover

@@ -21,6 +21,7 @@ class @Richarea
   @detector: new Detector
   constructor: (@iframe) ->
     @raw = @loader = null
+    @tidy = true
     @event = new Event
     @event.add 'ready', =>
       @raw = new ContentEditable @iframe
@@ -40,11 +41,8 @@ class @Richarea
       # Add 'change' event
       @event.add 'focus', =>
         @raw.body.setAttribute 'previousInnerHTML', @raw.body.innerHTML
-      @event.add 'blur keyup paste', =>
-        data = @raw.body.getAttribute('previousInnerHTML')
-        if data isnt @raw.body.innerHTML
-          @raw.body.setAttribute 'previousInnerHTML', @raw.body.innerHTML
-          @event.call 'change'
+      @event.add 'click focus blur keydown keyup paste', =>
+        @_change()
       # Add API
       @api = new API @
     if @iframe.getAttribute('src')?
@@ -53,6 +51,12 @@ class @Richarea
         @event.call 'ready'
     else
       @event.call 'ready'
+  _change: ->
+    HTMLTidy.tidy @raw.body, @raw.document if @tidy
+    data = @raw.body.getAttribute('previousInnerHTML')
+    if data isnt @raw.body.innerHTML
+      @raw.body.setAttribute 'previousInnerHTML', @raw.body.innerHTML
+      @event.call 'change'
   ready: (fn) ->
     if not @loader? or @loader.loaded()
       fn()
@@ -61,9 +65,12 @@ class @Richarea
   getValue: ->
     return @raw.body?.innerHTML? if @raw?
   setValue: (value) ->
-    @raw.body?.innerHTML = value if @raw?
+    if @raw?
+      @raw.body?.innerHTML = value
+      @_change()
   execCommand: (command, args=undefined) ->
     if not (command of @api)
       if window.console?.error? then console.error "Command '#{command}' not found."
     else
       @api[command] args
+      @_change()
