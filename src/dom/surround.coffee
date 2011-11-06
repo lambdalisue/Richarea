@@ -46,7 +46,7 @@ Surround =
           if node.tagName?.toLowerCase() is wrapNode.tagName?.toLowerCase()
             return node
           return null
-        result = DOMUtils.findUpstreamNode startContainer, test, null, true
+        result = DOMUtils.findUpstreamNode startContainer, test
         if result?
           previousSibling = result.previousSibling
           nextSibling = result.nextSibling
@@ -65,10 +65,26 @@ Surround =
           prerange.setEnd node
         return prerange
       else
-        # TODO: 
-        extracted = range.extractContents()
-        range.insertNode extracted
-        extracted.appendChild DOMUtils.createElementFromHTML('<sup>HelloHelloHello</sup>')
+        extracted = DOMUtils.extractDataNode startContainer, startOffset, endOffset
+        test = (node) ->
+          if node.tagName?.toLowerCase() is wrapNode.tagName?.toLowerCase()
+            return node
+          return null
+        result = DOMUtils.findUpstreamNode extracted, test, null, false
+        node = DOMUtils.removeNode result
+        test = (node) ->
+          if DOMUtils.isDataNode node
+            return node
+          return null
+        start = DOMUtils.findDownstreamNode node, test
+        cursor = start
+        while cursor?
+          cursor = DOMUtils.surroundNode cursor, wrapNode if cursor isnt extracted
+          cursor = DOMUtils.findNextDataNode cursor
+        prerange = new Prerange
+        prerange.setStart extracted
+        prerange.setEnd extracted
+        return prerange
     else
       getNodeInfo = (node) ->
         test = (node) ->

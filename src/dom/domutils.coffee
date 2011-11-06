@@ -59,10 +59,18 @@ DOMUtils =
     return counter
   findUpstreamNode: (start, test, end, strict=true) ->
     cursor = start
-    while cursor.parentNode? and cursor isnt end and (not strict or DOMUtils.isIsolateNode(cursor))
+    while cursor? and cursor isnt end
       result = test(cursor)
       return result if result?
       cursor = cursor.parentNode
+      break if strict and not DOMUtils.isIsolateNode(cursor)
+    return null
+  findDownstreamNode: (start, test, fromLast=false) ->
+    cursor = start
+    while cursor?
+      result = test(cursor)
+      return result if result?
+      cursor = if not fromLast then cursor.firstChild else cursor.lastChild
     return null
   findNextNode: (node) ->
     test = (node) ->
@@ -128,6 +136,7 @@ DOMUtils =
       end ?= node.childNodes.length
       for child in node.childNodes
         DOMUtils.surroundNode child, wrapNode, start, end if child?
+      return node
   surroundOutNode: (node, wrapNode) ->
     wrapNode = wrapNode.cloneNode(true)
     nextSibling = node.nextSibling
