@@ -131,8 +131,7 @@ Surround =
     return prerange
   _inline: (root, start, end, cover) ->
     # find upstream compatible inline node
-    coverTagName = cover.tagName?.toLowerCase()
-    test = (node) -> node.tagName?.toLowerCase() is coverTagName
+    test = (node) -> DOMUtils.isEqual node, cover
     found = DOMUtils.findUpstreamNode root, test
     if found?
       # Most complicated pattern. This pattern have to handle out node of range
@@ -150,6 +149,11 @@ Surround =
       DOMUtils.applyToAllTerminalNodes start, end, fn
       # Re-surround except nodes in exclude
       Surround.each firstChild, lastChild, cover, exclude
+      # TODO:
+      # HTMLTidy will flat DataNode so if start/end is DataNode which can be
+      # flatten, the storategy below doesn't work at all (start/end node will be
+      # disappear by HTMLTidy). I have to find different storategy to reset
+      # selected range after execusion.
       prerange = new Prerange
       prerange.setStart start
       prerange.setEnd end
