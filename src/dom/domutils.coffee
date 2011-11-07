@@ -22,13 +22,20 @@ DOMUtils =
     'img', 'br', 'hr'
   ]
   isNode: (node) ->
-    if node instanceof Node
+    # Ref: http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
+    if window.Node? and node instanceof Node
       return true
-    else if DOMUtils.isHTMLBodyElement(node)
+    else if typeof node is 'object' and typeof node.nodeType is 'number' and typeof node.nodeName is 'string'
+      return true
+    return false
+  isElement: (node) ->
+    if window.Element? and node instanceof Element
+      return true
+    else if typeof node is 'object' and typeof node.nodeType is 1 and typeof node.nodeName is 'string'
       return true
     return false
   isHTMLBodyElement: (node) ->
-    return node.toString?() is '[object HTMLBodyElement]'
+    return DOMUtils.isNode(node) and node.nodeName is 'BODY'
   isContainerNode: (node) ->
     tagName = node.tagName?.toLowerCase()
     return tagName? and tagName in DOMUtils.CONTAINER_ELEMENTS

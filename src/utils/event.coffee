@@ -10,6 +10,9 @@ First Author is Nicholas C. Zakas
 Copyright (c) 2010 Nicholas C. Zakas. All rights reserved.
 
 See original post: http://www.nczonline.net/blog/2010/03/09/custom-events-in-javascript/
+
+Dependencies:
+  DOMUtils - (dom/domutils.coffee)
 ###
 class Event
   constructor: (@target) ->
@@ -53,7 +56,7 @@ class Event
     event = target.__event
     event.removeEventListener type, listener
   @addDOMEventListener: (target, type, listener) ->
-    if target.attachEvent?
+    if not target.addEventListener?
       target.attachEvent "on#{type}", listener
     else
       target.addEventListener type, listener, false
@@ -63,7 +66,7 @@ class Event
     else
       target.removeEventListener type, listener, false
   @bind: (target, types, listener) ->
-    if target instanceof Node or (target.toString? and target.toString() is '[object HTMLBodyElement]')
+    if DOMUtils.isNode(target)
       # See the issue: http://stackoverflow.com/questions/5724717/in-javascript-how-do-you-determine-the-type-of-an-dom-object-for-example-html
       fn = Event.addDOMEventListener
     else

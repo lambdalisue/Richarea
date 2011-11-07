@@ -1,3 +1,9 @@
+if not Array.indexOf?
+  # IE doesn't have indexOf ...
+  Array.prototype.indexOf = (o) ->
+    for value, i in @
+      return i if value is o
+    return -1
 class @Richarea extends Event
   @detector: new Detector
   @dom: 
@@ -15,7 +21,6 @@ class @Richarea extends Event
       @selection = new Selection @raw.document
       # Porting Events
       @raw.bind 'focus click dblclick mousedown mousemove mouseup keydown keypress keyup paste blur change', (e) => 
-        e.target = @
         @fire e
       # Add Event
       @bind 'change', (e) => 
@@ -24,7 +29,10 @@ class @Richarea extends Event
       @tidy()
   # Tidy HTML with HTMLTidy
   tidy: ->
-    HTMLTidy.tidy @raw.body, @raw.document
+    if Richarea.detector.browser isnt 'Explorer'
+      HTMLTidy.tidy @raw.body, @raw.document
+    else
+      # Internet Explorer !!!!! I hate it.
   # Add fn to ready event. If IFrame has already loaded just fn will be called
   ready: (listener) -> 
     @raw.ready listener

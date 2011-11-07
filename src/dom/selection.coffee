@@ -7,16 +7,16 @@ License: MIT License
 Copyright 2011 hashnote.net, Alisue allright reserved
 
 Dependencies:
-  - IERange (ierange.js)
-  - IESelection (ierange.js)
+  - DOMRange (ierange.js)
+  - DOMSelection (ierange.js)
 ###
 class Selection
   constructor: (@document) ->
     @window = @document.defaultView or @document.parentWindow
-    if not @document.createRange? and window.IERange?
+    if not @document.createRange? and window.DOMRange?
       @document.createRange = =>
-        return new IERange @document
-      selection = new IESelection @document
+        return new DOMRange @document
+      selection = new DOMSelection @document
       @window.getSelection = =>
         @document.body.focus()
         return selection
@@ -45,7 +45,7 @@ class Prerange
         endOffset = endContainer.childNodes.length
       else
         textContent = endContainer.textContent or endContainer.nodeValue
-        endOffset = textContent.length
+        endOffset = if textContent? then textContent.length else 0
     @endContainer = endContainer
     @endOffset = endOffset
   attach: (range) ->

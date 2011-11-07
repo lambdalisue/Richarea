@@ -13,13 +13,6 @@ Dependencies:
 class ContentEditable extends Event
   constructor: (@iframe) ->
     super(null)
-    if @iframe.attachEvent?
-      Event.bind @iframe, 'onreadystatechange', =>
-        if @iframe.readyState is 'complete'
-          Event.unbind @iframe, 'onreadystatechange', arguments.callee
-          @fire 'ready'
-    else
-      Event.bind @iframe, 'load', => @fire 'ready'
     @window = null
     @bind 'ready', =>
       @window = @iframe.contentWindow
@@ -46,7 +39,6 @@ class ContentEditable extends Event
         @document.designMode = 'On'
       # Porting DOM Event
       Event.bind @body, 'focus click dblclick mousedown mousemove mouseup keydown keypress keyup blur paste', (e) => 
-        e.target = @
         @fire e
       # Add `change` event
       @bind 'focus', => @iframe.setAttribute 'previousContent', @getValue()
@@ -55,13 +47,24 @@ class ContentEditable extends Event
       @bind 'keydown', (e) =>
         key = e.keyCode or e.charCode or e.which
         if key is 9 and not e.ctrlKey and not e.altKey
-          e.preventDefault()
-          if e.shiftKey
-            @execCommand 'outdent'
+          if e.preventDefault?
+            e.preventDefault()
           else
-            @execCommand 'indent'
+            window.event.returnValue = false
+          @execCommand if e.shiftKey then 'outdent' else 'indent'
+          @update()
           return false
         return true
+    if @iframe.getAttribute('src')?
+      if not @iframe.addEventListener?
+        @iframe.attachEvent 'onreadystatechange', =>
+          if @iframe.readyState is 'complete'
+            @iframe.detachEvent 'onreadystatechange', arguments.callee
+            @fire 'ready'
+      else
+        Event.bind @iframe, 'load', => @fire 'ready'
+    else
+      @fire 'ready'
   ready: (listener) ->
     if @window?
       # Load has complete

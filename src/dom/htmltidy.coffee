@@ -62,11 +62,14 @@ HTMLTidy =
           HTMLTidy._tidyContainer(cursor)
         else
           # Offended W3C rule: Block node cannot contain except inline node
-          test = (node) -> DOMUtils.isContainerNode node
-          container = DOMUtils.findUpstreamNode cursor, test
-          offended = cursor.cloneNode false
-          Surround.remove cursor
-          Surround._container container, offended
+          root.removeChild cursor
+          nextSibling = root.nextSibling
+          parentNode = root.parentNode
+          parentNode.removeChild root
+          cursor.appendChild root
+          parentNode.insertBefore cursor, nextSibling
+          HTMLTidy._tidyContainer(cursor)
+          return
       else if DOMUtils.isBlockNode(cursor)
         if cursor.tagName in ['OL', 'UL'] and root.tagName in ['OL', 'UL']
           # Recursive call
