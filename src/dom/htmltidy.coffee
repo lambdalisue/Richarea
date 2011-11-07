@@ -28,7 +28,7 @@ HTMLTidy =
       else if DOMUtils.isInlineNode(cursor)
         test = (node) -> DOMUtils.isEqual node, cursor
         endTest = (node) -> not DOMUtils.isInlineNode node
-        found = DOMUtils.findUpstreamNode cursor, test, endTest
+        found = DOMUtils.findUpstreamNode cursor.parentNode, test, endTest
         if found?
           # The inline node has already applied on ancestor node so not required
           Surround.remove cursor

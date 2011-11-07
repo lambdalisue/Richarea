@@ -13,6 +13,10 @@ $(document).ready(function(){
     // bind events
     richarea.ready(function(){
         richarea.bind('change', forwardUpdate);
+        richarea.bind('change focus keydown keypress click', function(e){
+            var path = richarea.getPath();
+            $('#path').empty().append(path.join(" > "));
+        });
         $('#preview').bind('blur', reverseUpdate);
         $('#toolbar li a.do').click(function(){
             var $$ = $(this);

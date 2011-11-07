@@ -4,6 +4,7 @@ class @Richarea extends Event
     super(null)
     @raw = new ContentEditable @iframe
     @raw.ready =>
+      @selection = new Selection @raw.document
       @api = new API @
       # Porting Events
       @raw.bind 'focus click dblclick keydown keypress keyup paste blur change', (e) => 
@@ -29,3 +30,18 @@ class @Richarea extends Event
   execCommand: (command, args=undefined) ->
     @api[command] args
     @raw.update()
+  # Get current path
+  getPath: ->
+    selection = @selection.getSelection()
+    if selection.rangeCount > 0
+      range = selection.getRangeAt 0
+      cursor = range.commonAncestorContainer
+      path = []
+      while cursor? and cursor.toString() isnt '[object HTMLBodyElement]'
+        path.push cursor.tagName if not DOMUtils.isDataNode(cursor)
+        cursor = cursor.parentNode
+      path = path.reverse()
+      return path
+    return []
+
+

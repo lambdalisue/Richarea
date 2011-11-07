@@ -139,7 +139,7 @@ Surround =
       # terminal node of found cover node except selected range
       # store firstChild and lastChild before remove found node
       firstChild = found.firstChild
-      lastChild = found.lastChild
+      lastChild = DOMUtils.findNextTerminalNode found.lastChild
       # Remove surround node
       root = Surround.remove found
       # find exclude nodes

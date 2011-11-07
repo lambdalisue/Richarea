@@ -96,7 +96,7 @@ DOMUtils =
       result = test(cursor)
       return cursor if result
       cursor = cursor.parentNode
-      return null if endTest? and endTest node
+      return null if endTest? and endTest cursor
     return null
   findTerminalNode: (node, last=false) ->
     if not last
