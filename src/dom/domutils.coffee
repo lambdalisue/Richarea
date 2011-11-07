@@ -31,13 +31,6 @@ DOMUtils =
     return tagName? and tagName in DOMUtils.CLOSE_ELEMENTS
   isInlineNode: (node) ->
     return not (DOMUtils.isContainerNode(node) or DOMUtils.isBlockNode(node) or DOMUtils.isDataNode(node))
-  createElementFromHTML: (html) ->
-    container = document.createElement 'div'
-    container.innerHTML = html
-    return container.firstChild
-  getTextContent: (node) ->
-    # W3C DOM has textContent but IE use nodeValue
-    return node.textContent or node.nodeValue
   isDataNode: (node) ->
     return node? and (node.nodeType is 3)
   isVisibleNode: (node) ->
@@ -74,6 +67,20 @@ DOMUtils =
         c2 = deepEqual lhs.styles, rhs.styles
         return c1 and c2
     return false
+  createElementFromHTML: (html) ->
+    container = document.createElement 'div'
+    container.innerHTML = html
+    return container.firstChild
+  getTextContent: (node) ->
+    # W3C DOM has textContent but IE use nodeValue
+    return node.textContent or node.nodeValue
+  setTextContent: (node, text) ->
+    if node.textContent?
+      node.textContent = text
+    else
+      node.nodeValue = text
+  getNodeLength: (node) ->
+    return if DOMUtils.isDataNode(node) then node.length else node.childNodes.length
   findClosestAncestor: (root, node) ->
     if DOMUtils.isAncestorOf(root, node)
       while node and node.parentNode isnt root
@@ -127,8 +134,6 @@ DOMUtils =
       fn cursor
       break if cursor is end
       cursor = next
-  getNodeLength: (node) ->
-    return if DOMUtils.isDataNode(node) then node.length else node.childNodes.length
   splitDataNode: (node, offset) ->
     if not DOMUtils.isDataNode(node)
       return false
@@ -166,15 +171,10 @@ DOMUtils =
       parentNode.insertBefore _textNode, nextSibling if DOMUtils.isVisibleNode _textNode
     return textNode
   concatDataNode: (lhs, rhs) ->
-    nextSibling = rhs.nextSibling
-    parentNode = rhs.parentNode
-    parentNode.removeChild lhs
+    parentNode = lhs.parentNode
     parentNode.removeChild rhs
-    lhs = DOMUtils.getTextContent lhs
-    rhs = DOMUtils.getTextContent rhs
-    dataNode = document.createTextNode lhs+rhs
-    parentNode.insertBefore dataNode, nextSibling
-    return dataNode
+    DOMUtils.setTextContent lhs, DOMUtils.getTextContent(lhs)+DOMUtils.getTextContent(rhs)
+    return lhs
   concatNode: (lhs, rhs) ->
     parentNode = rhs.parentNode
     parentNode.removeChild rhs

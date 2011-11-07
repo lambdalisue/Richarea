@@ -149,11 +149,28 @@ Surround =
       DOMUtils.applyToAllTerminalNodes start, end, fn
       # Re-surround except nodes in exclude
       Surround.each firstChild, lastChild, cover, exclude
-      # TODO:
-      # HTMLTidy will flat DataNode so if start/end is DataNode which can be
-      # flatten, the storategy below doesn't work at all (start/end node will be
-      # disappear by HTMLTidy). I have to find different storategy to reset
-      # selected range after execusion.
+      if start is end and DOMUtils.isDataNode(start)
+        previousSibling = start.previousSibling
+        if previousSibling? and DOMUtils.isDataNode(previousSibling)
+          # HTMLTidy will concat the previousSibling and start node because both
+          # of them is DataNode. That's why the storategy of set start/end node
+          # to prerange doesn't work at all. What things need to do is that
+          # concat previousSibling and start node manually and return start/end
+          # with offset which can be calculated by each DataNode length
+          #
+          # Note:
+          #   I check only `previousSibling` because DOMUtils.concatDataNode
+          #   doesn't remove lhs node (It only remove rhs node and modify lhs
+          #   nodeValue and return lhs) so even if there are only nextSibling,
+          #   start/end node isn't affected by HTMLTidy
+          node = start
+          start = if previousSibling? then previousSibling.length else 0
+          end = start + node.length
+          node = DOMUtils.concatDataNode previousSibling, node
+          prerange = new Prerange
+          prerange.setStart node, start
+          prerange.setEnd node, end
+          return prerange
       prerange = new Prerange
       prerange.setStart start
       prerange.setEnd end
