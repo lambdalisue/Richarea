@@ -1,79 +1,29 @@
-class Loader
-  constructor: (@iframe) ->
-    @_loaded = false
-    @event = new Event
-    @event.add 'ready', =>
-      @_loaded = true
-    if Richarea.detector.browser is 'Explorer' and Richarea.detector.version < 9
-      @iframe.attachEvent 'onreadystatechange', =>
-        if @iframe.readyState is 'complete'
-          @iframe.onreadystatechange = null
-          @event.call 'ready'
-    else
-      @iframe.addEventListener 'load', =>
-        @event.call 'ready'
-      , false
-  ready: (fn) ->
-    @event.add 'ready', fn
-  loaded: ->
-    return @_loaded
-class @Richarea
+class @Richarea extends Event
   @detector: new Detector
   constructor: (@iframe) ->
-    @raw = @loader = null
-    @event = new Event
-    @event.add 'ready', =>
-      @raw = new ContentEditable @iframe
-      # Add events
-      _addEvent = (trigger, fn) =>
-        if @raw.body.contentEditable?
-          DOMEvent.add @raw.body, trigger, fn
-        else
-          DOMEvent.add @raw.document, trigger, fn
-      events = [
-        'keydown', 'keypress', 'keyup',
-        'click', 'focus', 'blur', 'paste'
-      ]
-      for event in events
-        _addEvent event, (args...) =>
-          @event.call.apply @event, [event].concat(args)
-      # Add 'change' event
-      @event.add 'focus', =>
-        @raw.body.setAttribute 'previousInnerHTML', @raw.body.innerHTML
-      @event.add 'click focus blur keydown keyup paste', =>
-        @_change()
-      # Add API
+    super(null)
+    @raw = new ContentEditable @iframe
+    @raw.ready =>
       @api = new API @
-      # Tidy HTML
-      @tidy()
-    if @iframe.getAttribute('src')?
-      @loader = new Loader @iframe
-      @loader.ready =>
-        @event.call 'ready'
-    else
-      @event.call 'ready'
-  _change: ->
-    @tidy()
-    data = @raw.body.getAttribute('previousInnerHTML')
-    if data isnt @raw.body.innerHTML
-      @raw.body.setAttribute 'previousInnerHTML', @raw.body.innerHTML
-      @event.call 'change'
+      # Porting Events
+      @raw.bind 'focus click dblclick keydown keypress keyup paste blur change', (e) => 
+        e.target = @
+        @fire e
+      # Add Event
+      @bind 'change', (e) => 
+        @tidy()
+  # Tidy HTML with HTMLTidy
   tidy: ->
     HTMLTidy.tidy @raw.body, @raw.document
-  ready: (fn) ->
-    if not @loader? or @loader.loaded()
-      fn()
-    else
-      @loader.ready fn
+  # Add fn to ready event. If IFrame has already loaded just fn will be called
+  ready: (listener) -> @raw.ready listener
+  # Get value
   getValue: ->
-    return @raw.body?.innerHTML? if @raw?
+    return @raw.getValue()
+  # Set value
   setValue: (value) ->
-    if @raw?
-      @raw.body?.innerHTML = value
-      @_change()
+    @raw.setValue value
+  # Exec editor command
   execCommand: (command, args=undefined) ->
-    if not (command of @api)
-      if window.console?.error? then console.error "Command '#{command}' not found."
-    else
-      @api[command] args
-      @_change()
+    @api[command] args
+    @raw.update()

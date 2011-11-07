@@ -17,7 +17,7 @@ path            = require 'path'
 util            = require 'util'
 {spawn, exec}   = require 'child_process'
 
-VERSION = 'v0.1.2'
+VERSION = 'v0.2.0'
 NAME = 'richarea'
 CS = 'src'
 JS = 'lib'
@@ -29,7 +29,6 @@ FILES = [
   'utils/partial',
   'utils/event',
   'dom/domutils',
-  'dom/domevent',
   'dom/htmltidy',
   'dom/selection',
   'dom/surround',

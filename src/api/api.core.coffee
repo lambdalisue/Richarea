@@ -1,3 +1,11 @@
+###
+Editor API
+
+Author: Alisue(lambdalisue@hashnote.net)
+License: MIT License
+
+Copyright 2010 hashnote.net, Alisue allright reserved.
+###
 class API
   constructor: (@richarea) ->
     @richarea.ready =>

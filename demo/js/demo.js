@@ -12,7 +12,7 @@ $(document).ready(function(){
     };
     // bind events
     richarea.ready(function(){
-        richarea.event.add('change', forwardUpdate);
+        richarea.bind('change', forwardUpdate);
         $('#preview').bind('blur', reverseUpdate);
         $('#toolbar li a.do').click(function(){
             var $$ = $(this);

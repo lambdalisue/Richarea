@@ -116,16 +116,10 @@ DOMUtils =
     node = DOMUtils.findNextNode node
     node = DOMUtils.findTerminalNode node
     return node
-  findNextDataNode: (node) -> 
-    console.warn 'use DOMUtils.findNextTerminalNode insted'
-    DOMUtils.findNextTerminalNode(node)
   findPreviousTerminalNode: (node) ->
     node = DOMUtils.findPreviousNode node
     node = DOMUtils.findTerminalNode node, true
     return node
-  findPreviousDataNode: (node) ->
-    console.warn 'use DOMUtils.findPreviousTerminalNode insted'
-    DOMUtils.findPreviousTerminalNode node
   applyToAllTerminalNodes: (start, end, fn) ->
     cursor = DOMUtils.findTerminalNode start
     end = DOMUtils.findTerminalNode end

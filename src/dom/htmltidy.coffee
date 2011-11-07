@@ -1,17 +1,25 @@
+###
+Tidy HTML according to W3C rule
+
+Author: Alisue(lambdalisue@hashnote.net)
+License: MIT License
+
+Copyright 2010 hashnote.net, Alisue allright reserved
+###
 HTMLTidy =
   _tidyInline: (root) ->
     cursor = root.firstChild
     while cursor?
       next = cursor.nextSibling
       if DOMUtils.isContainerNode(cursor)
-        # Offended W3C rule: Block node cannot contain except inline node
+        # Offended W3C rule: inline node cannot contain except inline node
         test = (node) -> DOMUtils.isContainerNode node
         container = DOMUtils.findUpstreamNode cursor, test
         offended = cursor.cloneNode false
         Surround.remove cursor
         Surround._container container, offended
       else if DOMUtils.isBlockNode(cursor)
-        # Offended W3C rule: Block node cannot contain except inline node
+        # Offended W3C rule: inline node cannot contain except inline node
         test = (node) -> DOMUtils.isContainerNode node
         container = DOMUtils.findUpstreamNode cursor, test
         offended = cursor.cloneNode false
