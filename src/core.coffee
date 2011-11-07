@@ -22,8 +22,7 @@ class @Richarea extends Event
       @tidy()
   # Tidy HTML with HTMLTidy
   tidy: ->
-    #HTMLTidy.tidy @raw.body, @raw.document
-    @
+    HTMLTidy.tidy @raw.body, @raw.document
   # Add fn to ready event. If IFrame has already loaded just fn will be called
   ready: (listener) -> 
     @raw.ready listener
