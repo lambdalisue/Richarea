@@ -32,12 +32,6 @@ FILES = [
   'dom/htmltidy',
   'dom/selection',
   'dom/surround',
-  'api/api.core',
-  'api/api.behavior',
-  'api/api.block',
-  'api/api.inline',
-  'api/api.insert',
-  'api/api.style',
   'contenteditable',
   'core',
 ]

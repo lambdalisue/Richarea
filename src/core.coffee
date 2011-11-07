@@ -5,7 +5,6 @@ class @Richarea extends Event
     @raw = new ContentEditable @iframe
     @raw.ready =>
       @selection = new Selection @raw.document
-      @api = new API @
       # Porting Events
       @raw.bind 'focus click dblclick keydown keypress keyup paste blur change', (e) => 
         e.target = @
@@ -26,9 +25,8 @@ class @Richarea extends Event
   # Set value
   setValue: (value) ->
     @raw.setValue value
-  # Exec editor command
+  # Exec browser editor command
   execCommand: (command, args=undefined) ->
-    @api[command] args
     @raw.update()
   # Get current path
   getPath: ->
@@ -43,5 +41,84 @@ class @Richarea extends Event
       path = path.reverse()
       return path
     return []
-
-
+  getSelection: ->
+    return @selection.getSelection()
+  setSelection: (range) ->
+    @selection.setSelection range
+  getSelectedContent: ->
+    selection = @getSelection()
+    if selection.rangeCount > 0 and not selection.isCollapsed
+      range = selection.getRangeAt 0
+      return range.cloneContents()
+    return null
+  replaceSelection: (replace, select=true) ->
+    selection = @getSelection()
+    if selection.rangeCount > 0
+      replace = DOMUtils.createElementFromHTML replace
+      range = selection.getRangeAt 0
+      selection.removeAllRanges()
+      range.extractContents()
+      range.insertNode replace
+      range = @selection.createRange()
+      range.selectNode replace
+      range.collapse false if not select
+      @setSelection range
+      @raw.update()
+  insertBeforeSelection: (insert, select=true) ->
+    # TODO:
+    # if extracted is DataNode, HTMLTidy will break selection
+    selection = @getSelection()
+    if selection.rangeCount > 0
+      insert = DOMUtils.createElementFromHTML insert
+      range = selection.getRangeAt 0
+      selection.removeAllRanges()
+      extracted = range.extractContents()
+      range.insertNode extracted
+      range.insertNode insert
+      range = @selection.createRange()
+      range.setStartBefore extracted, 0
+      range.setEndAfter insert, DOMUtils.getNodeLength(insert)
+      range.collapse false if not select
+      @setSelection range
+      @raw.update()
+  insertAfterSelection: (insert, select=true) ->
+    # TODO:
+    # if extracted is DataNode, HTMLTidy will break selection
+    selection = @getSelection()
+    if selection.rangeCount > 0
+      insert = DOMUtils.createElementFromHTML insert
+      range = selection.getRangeAt 0
+      selection.removeAllRanges()
+      extracted = range.extractContents()
+      range.insertNode insert
+      range.insertNode extracted
+      range = @selection.createRange()
+      range.setStart insert, 0
+      range.setEnd extracted, DOMUtils.getNodeLength(extracted)
+      range.collapse false if not select
+      @setSelection range
+      @raw.update()
+  surroundSelection: (cover, select=true) ->
+    selection = @getSelection()
+    if selection.rangeCount > 0
+      cover = DOMUtils.createElementFromHTML cover
+      range = selection.getRangeAt 0
+      selection.removeAllRanges()
+      prerange = Surround.range range, cover
+      range = @selection.createRange()
+      range = prerange.attach range
+      range.collapse false if not select
+      @setSelection range
+      @raw.update()
+  unsurroundSelection: (cover, select=true) ->
+    selection = @getSelection()
+    if selection.rangeCount > 0
+      cover = DOMUtils.createElementFromHTML cover
+      range = selection.getRangeAt 0
+      selection.removeAllRanges()
+      prerange = Surround.range range, cover, true
+      range = @selection.createRange()
+      range = prerange.attach range
+      range.collapse false if not select
+      @setSelection range
+      @raw.update()

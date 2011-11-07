@@ -3,10 +3,10 @@ body{
     color: #3c3c3c;
     font-size: 0.8em;
 }
-a, a:visited{
+a, a:visited {
     color: #8e8eaa;
 }
-a:hover, a:active{
+a:hover, a:active {
     color: #8e8eff;
 }
 div#wrapper{
@@ -54,7 +54,7 @@ nav#relatedlinks ul li a{
     outline: none;
     opacity: 0.6;
 }
-nav#relatedlinks ul li a:hover{
+nav#relatedlinks ul li a:hover {
     opacity: 1.0;
 }
 nav#relatedlinks ul li#github a{
@@ -80,18 +80,17 @@ ul#toolbar li{
     padding: 0;
     font-size: 12px;
 }
-ul#toolbar li:first-child{
+ul#toolbar li:first-child {
     margin-left: 0;
 }
-ul#toolbar li span.separator{
-    display: block;
+ul#toolbar li.separator{
     height: 14px;
     margin: 0 2px 0 0;
     padding: 0 0 0 2px;
     border-right: 1px solid #e4e4e4;
     text-indent: -10000px;
 }
-ul#toolbar li a{
+ul#toolbar li.button a{
     display: block;
     margin: 0;
     padding: 4px 6px;
@@ -102,12 +101,16 @@ ul#toolbar li a{
     outline: none;
     text-align: center;
     vertical-align: center;
+    cursor: pointer;
 }
-ul#toolbar li a:hover{
+ul#toolbar li.button a:hover {
     background: #eeeefa;
 }
-ul#toolbar li a:active{
+ul#toolbar li.button a:active {
     background: #ddddff;
+}
+ul#toolbar li.button.active a{
+    background: #ddddff !important;
 }
 iframe#richarea{
     float: left;
