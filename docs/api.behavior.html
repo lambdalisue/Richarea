@@ -1,0 +1,11 @@
+<!DOCTYPE html>  <html> <head>   <title>api.behavior.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               api.behavior.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="k">if</span> <span class="nx">require</span><span class="o">?</span>
+  <span class="p">{</span><span class="nx">partial</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s1">&#39;../utils/partial&#39;</span>
+  <span class="p">{</span><span class="nx">API</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s1">&#39;./api.core&#39;</span>
+<span class="nv">API = </span><span class="nx">partial</span> <span class="nx">API</span><span class="p">,</span>
+  <span class="nv">indent: </span><span class="o">-&gt;</span>
+    <span class="nx">@raw</span><span class="p">.</span><span class="nx">execCommand</span> <span class="s1">&#39;indent&#39;</span>
+  <span class="nv">outdent: </span><span class="o">-&gt;</span>
+    <span class="nx">@raw</span><span class="p">.</span><span class="nx">execCommand</span> <span class="s1">&#39;outdent&#39;</span>
+<span class="nx">exports</span><span class="o">?</span><span class="p">.</span><span class="nv">API = </span><span class="nx">API</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

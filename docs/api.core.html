@@ -1,0 +1,23 @@
+<!DOCTYPE html>  <html> <head>   <title>api.core.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               api.core.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">API</span>
+  <span class="nv">constructor: </span><span class="nf">(@richarea) -&gt;</span>
+    <span class="nx">@richarea</span><span class="p">.</span><span class="nx">ready</span> <span class="o">=&gt;</span>
+      <span class="vi">@selection = </span><span class="k">new</span> <span class="nx">Selection</span> <span class="nx">@richarea</span><span class="p">.</span><span class="nx">raw</span><span class="p">.</span><span class="nb">document</span>
+  <span class="nv">execCommand: </span><span class="nf">(type, arg) -&gt;</span>
+    <span class="nv">selection = </span><span class="nx">@selection</span><span class="p">.</span><span class="nx">getSelection</span><span class="p">()</span>
+    <span class="nv">range = </span><span class="nx">selection</span><span class="p">.</span><span class="nx">getRangeAt</span> <span class="mi">0</span>
+    <span class="nx">selection</span><span class="p">.</span><span class="nx">removeAllRanges</span><span class="p">()</span>
+    <span class="k">switch</span> <span class="nx">type</span>
+      <span class="k">when</span> <span class="s1">&#39;surround&#39;</span>
+        <span class="nv">cover = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">createElementFromHTML</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span>
+        <span class="nv">prerange = </span><span class="nx">Surround</span><span class="p">.</span><span class="nx">range</span> <span class="nx">range</span><span class="p">,</span> <span class="nx">cover</span>
+        <span class="nv">range = </span><span class="nx">@selection</span><span class="p">.</span><span class="nx">createRange</span><span class="p">()</span>
+        <span class="nv">range = </span><span class="nx">prerange</span><span class="p">.</span><span class="nx">attach</span> <span class="nx">range</span>
+      <span class="k">when</span> <span class="s1">&#39;unsurround&#39;</span>
+        <span class="nv">cover = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">createElementFromHTML</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span>
+        <span class="nv">prerange = </span><span class="nx">Surround</span><span class="p">.</span><span class="nx">range</span> <span class="nx">range</span><span class="p">,</span> <span class="nx">cover</span><span class="p">,</span> <span class="kc">true</span>
+        <span class="nv">range = </span><span class="nx">@selection</span><span class="p">.</span><span class="nx">createRange</span><span class="p">()</span>
+        <span class="nv">range = </span><span class="nx">prerange</span><span class="p">.</span><span class="nx">attach</span> <span class="nx">range</span>
+    <span class="nx">@selection</span><span class="p">.</span><span class="nx">setSelection</span> <span class="nx">range</span>
+    <span class="k">return</span> <span class="kc">true</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

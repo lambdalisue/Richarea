@@ -1,0 +1,53 @@
+<!DOCTYPE html>  <html> <head>   <title>selection.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               selection.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h1>#</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">Crosbrowser</span> <span class="nx">Selection</span>
+
+<span class="nv">Author: </span><span class="nx">Alisue</span> <span class="p">(</span><span class="nx">lambdalisue@hashnote</span><span class="p">.</span><span class="nx">net</span><span class="p">)</span>
+<span class="nv">License: </span><span class="nx">MIT</span> <span class="nx">License</span>
+
+<span class="nx">Copyright</span> <span class="mi">2011</span> <span class="nx">hashnote</span><span class="p">.</span><span class="nx">net</span><span class="p">,</span> <span class="nx">Alisue</span> <span class="nx">allright</span> <span class="nx">reserved</span>
+
+<span class="nv">Dependencies:</span>
+  <span class="o">-</span> <span class="nx">IERange</span> <span class="p">(</span><span class="nx">ierange</span><span class="p">.</span><span class="nx">js</span><span class="p">)</span>
+  <span class="o">-</span> <span class="nx">IESelection</span> <span class="p">(</span><span class="nx">ierange</span><span class="p">.</span><span class="nx">js</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h1>#</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Selection</span>
+  <span class="nv">constructor: </span><span class="nf">(@document) -&gt;</span>
+    <span class="vi">@window = </span><span class="nx">@document</span><span class="p">.</span><span class="nx">defaultView</span> <span class="o">or</span> <span class="nx">@document</span><span class="p">.</span><span class="nx">parentWindow</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">@document</span><span class="p">.</span><span class="nx">createRange</span><span class="o">?</span> <span class="o">and</span> <span class="nb">window</span><span class="p">.</span><span class="nx">IERange</span><span class="o">?</span>
+      <span class="vi">@document.createRange = </span><span class="o">=&gt;</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">IERange</span> <span class="nx">@document</span>
+      <span class="nv">selection = </span><span class="k">new</span> <span class="nx">IESelection</span> <span class="nx">@document</span>
+      <span class="vi">@window.getSelection = </span><span class="o">=&gt;</span>
+        <span class="nx">@document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">focus</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nx">selection</span>
+  <span class="nv">getSelection: </span><span class="o">-&gt;</span>
+    <span class="k">return</span> <span class="nx">@window</span><span class="p">.</span><span class="nx">getSelection</span><span class="p">()</span>
+  <span class="nv">setSelection: </span><span class="nf">(range) -&gt;</span>
+    <span class="nv">selection = </span><span class="nx">@getSelection</span><span class="p">()</span>
+    <span class="nx">selection</span><span class="p">.</span><span class="nx">removeAllRanges</span><span class="p">()</span>
+    <span class="nx">selection</span><span class="p">.</span><span class="nx">addRange</span><span class="p">(</span><span class="nx">range</span><span class="p">)</span>
+  <span class="nv">getRangeAt: </span><span class="nf">(index) -&gt;</span>
+    <span class="nv">selection = </span><span class="nx">@getSelection</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nx">selection</span><span class="p">.</span><span class="nx">getRangeAt</span> <span class="nx">index</span>
+  <span class="nv">createRange: </span><span class="o">-&gt;</span>
+    <span class="k">return</span> <span class="nx">@document</span><span class="p">.</span><span class="nx">createRange</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nx">Prerange</span>
+  <span class="nv">constructor: </span><span class="nf">(@startContainer, @startOffset, @endContainer, @endOffset) -&gt;</span>
+
+  <span class="nv">setStart: </span><span class="nf">(startContainer, startOffset) -&gt;</span>
+    <span class="nv">startOffset = </span><span class="mi">0</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">startOffset</span><span class="o">?</span>
+    <span class="vi">@startContainer = </span><span class="nx">startContainer</span>
+    <span class="vi">@startOffset = </span><span class="nx">startOffset</span>
+  <span class="nv">setEnd: </span><span class="nf">(endContainer, endOffset) -&gt;</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">endOffset</span><span class="o">?</span>
+      <span class="k">if</span> <span class="nx">endContainer</span><span class="p">.</span><span class="nx">firstChild</span><span class="o">?</span>
+        <span class="nv">endOffset = </span><span class="nx">endContainer</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span>
+      <span class="k">else</span>
+        <span class="nv">textContent = </span><span class="nx">endContainer</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">or</span> <span class="nx">endContainer</span><span class="p">.</span><span class="nx">nodeValue</span>
+        <span class="nv">endOffset = </span><span class="nx">textContent</span><span class="p">.</span><span class="nx">length</span>
+    <span class="vi">@endContainer = </span><span class="nx">endContainer</span>
+    <span class="vi">@endOffset = </span><span class="nx">endOffset</span>
+  <span class="nv">attach: </span><span class="nf">(range) -&gt;</span>
+    <span class="nx">range</span><span class="p">.</span><span class="nx">setStart</span> <span class="nx">@startContainer</span><span class="p">,</span> <span class="nx">@startOffset</span>
+    <span class="nx">range</span><span class="p">.</span><span class="nx">setEnd</span> <span class="nx">@endContainer</span><span class="p">,</span> <span class="nx">@endOffset</span>
+    <span class="k">return</span> <span class="nx">range</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

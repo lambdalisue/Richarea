@@ -1,0 +1,20 @@
+<!DOCTYPE html>  <html> <head>   <title>api.insert.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               api.insert.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="nv">API = </span><span class="nx">partial</span> <span class="nx">API</span><span class="p">,</span>
+  <span class="nv">a: </span><span class="nf">(href) -&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;surround&#39;</span><span class="p">,</span> <span class="s2">&quot;&lt;a href=&#39;#{href}&#39;&gt;&quot;</span>
+  <span class="nv">img: </span><span class="nf">(src) -&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;insert&#39;</span><span class="p">,</span> <span class="s2">&quot;&lt;img src=&#39;#{src}&#39;&gt;&quot;</span>
+  <span class="nv">ul: </span><span class="o">-&gt;</span>
+    <span class="nx">@raw</span><span class="p">.</span><span class="nx">execCommand</span> <span class="s1">&#39;insertUnorderedList&#39;</span>
+  <span class="nv">ol: </span><span class="o">-&gt;</span>
+    <span class="nx">@raw</span><span class="p">.</span><span class="nx">execCommand</span> <span class="s1">&#39;insertOrderedList&#39;</span>
+  <span class="nv">hr: </span><span class="o">-&gt;</span>
+    <span class="nx">@raw</span><span class="p">.</span><span class="nx">execCommand</span> <span class="s1">&#39;insertHorizontalRule&#39;</span>
+  <span class="nv">table: </span><span class="nf">(args=[5, 5, &#39;Table Caption&#39;]) -&gt;</span>
+    <span class="p">[</span><span class="nx">rows</span><span class="p">,</span> <span class="nx">cols</span><span class="p">,</span> <span class="nx">caption</span><span class="p">]</span> <span class="o">=</span> <span class="nx">args</span>
+    <span class="nv">tds = </span><span class="p">(</span><span class="s1">&#39;    &lt;td&gt;XXX&lt;/td&gt;&#39;</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">...</span><span class="nx">cols</span><span class="p">])</span>
+    <span class="nv">trs = </span><span class="p">(</span><span class="s2">&quot;  &lt;tr&gt;\n#{tds.join &#39;\n&#39;}\n  &lt;/tr&gt;&quot;</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">...</span><span class="nx">rows</span><span class="p">])</span>
+    <span class="nv">caption = </span><span class="k">if</span> <span class="nx">caption</span><span class="o">?</span> <span class="k">then</span> <span class="s2">&quot;\n&lt;caption&gt;#{caption}&lt;/caption&gt;&quot;</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+    <span class="nv">table = </span><span class="s2">&quot;&lt;table&gt;#{caption}\n#{trs.join &#39;\n&#39;}\n&lt;/table&gt;&quot;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;insert&#39;</span><span class="p">,</span> <span class="nx">table</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

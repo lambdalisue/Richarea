@@ -1,0 +1,27 @@
+<!DOCTYPE html>  <html> <head>   <title>partial.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               partial.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h1>#</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">partial</span>
+
+<span class="nx">CoffeeScript</span> <span class="nx">partial</span> <span class="k">class</span> <span class="nx">utils</span><span class="p">.</span> <span class="nx">it</span> <span class="o">is</span> <span class="nx">useful</span> <span class="k">when</span> <span class="nx">you</span> <span class="nx">create</span> <span class="nx">a</span> <span class="nx">large</span> <span class="k">class</span>
+<span class="o">and</span> <span class="nx">want</span> <span class="nx">split</span> <span class="nx">the</span> <span class="k">class</span> <span class="nx">to</span> <span class="nx">several</span> <span class="nx">files</span><span class="p">.</span>
+
+<span class="nv">Author: </span><span class="nx">Alisue</span> <span class="p">(</span><span class="nx">lambdalisue@hashnote</span><span class="p">.</span><span class="nx">net</span><span class="p">)</span>
+<span class="nv">License: </span><span class="nx">MIT</span> <span class="nx">License</span>
+
+<span class="nx">Copyright</span> <span class="mi">2011</span> <span class="nx">hashnote</span><span class="p">.</span><span class="nx">net</span><span class="p">,</span> <span class="nx">Alisue</span> <span class="nx">allright</span> <span class="nx">reserved</span>
+
+<span class="nv">Example:</span>
+  <span class="err">// person.core.coffee</span>
+  <span class="k">class</span> <span class="nx">Person</span>
+    <span class="nv">constructor: </span><span class="nf">(@name) -&gt;</span> <span class="err">@</span>
+    <span class="nv">say: </span><span class="o">-&gt;</span> <span class="s2">&quot;My name is #{@name}&quot;</span>
+  <span class="o">/</span><span class="err">/ person.hobby.coffee</span>
+  <span class="nv">Person = </span><span class="nx">partial</span> <span class="nx">Person</span><span class="p">,</span>
+    <span class="nv">chess: </span><span class="o">-&gt;</span> <span class="s1">&#39;Yes I like&#39;</span>
+  <span class="o">/</span><span class="err">/ person.food.coffee</span>
+  <span class="nv">Person = </span><span class="nx">partial</span> <span class="nx">Person</span><span class="p">,</span>
+    <span class="nv">apple: </span><span class="o">-&gt;</span> <span class="s1">&#39;No i don&#39;</span><span class="nx">t</span> <span class="nx">like</span> <span class="nx">it</span><span class="err">&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h1>#</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">partial = </span><span class="nf">(cls, prototypes) -&gt;</span>
+  <span class="k">for</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">callback</span> <span class="k">of</span> <span class="nx">prototypes</span>
+    <span class="nx">cls</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">callback</span>
+  <span class="k">return</span> <span class="nx">cls</span>
+<span class="nx">exports</span><span class="o">?</span><span class="p">.</span><span class="nv">partial = </span><span class="nx">partial</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

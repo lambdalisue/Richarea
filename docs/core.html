@@ -1,0 +1,73 @@
+<!DOCTYPE html>  <html> <head>   <title>core.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               core.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Loader</span>
+  <span class="nv">constructor: </span><span class="nf">(@iframe) -&gt;</span>
+    <span class="vi">@_loaded = </span><span class="kc">false</span>
+    <span class="vi">@event = </span><span class="k">new</span> <span class="nx">Event</span>
+    <span class="nx">@event</span><span class="p">.</span><span class="nx">add</span> <span class="s1">&#39;ready&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+      <span class="vi">@_loaded = </span><span class="kc">true</span>
+    <span class="k">if</span> <span class="nx">Richarea</span><span class="p">.</span><span class="nx">detector</span><span class="p">.</span><span class="nx">browser</span> <span class="o">is</span> <span class="s1">&#39;Explorer&#39;</span> <span class="o">and</span> <span class="nx">Richarea</span><span class="p">.</span><span class="nx">detector</span><span class="p">.</span><span class="nx">version</span> <span class="o">&lt;</span> <span class="mi">9</span>
+      <span class="nx">@iframe</span><span class="p">.</span><span class="nx">attachEvent</span> <span class="s1">&#39;onreadystatechange&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+        <span class="k">if</span> <span class="nx">@iframe</span><span class="p">.</span><span class="nx">readyState</span> <span class="o">is</span> <span class="s1">&#39;complete&#39;</span>
+          <span class="vi">@iframe.onreadystatechange = </span><span class="kc">null</span>
+          <span class="nx">@event</span><span class="p">.</span><span class="nx">call</span> <span class="s1">&#39;ready&#39;</span>
+    <span class="k">else</span>
+      <span class="nx">@iframe</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="s1">&#39;load&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+        <span class="nx">@event</span><span class="p">.</span><span class="nx">call</span> <span class="s1">&#39;ready&#39;</span>
+      <span class="p">,</span> <span class="kc">false</span>
+  <span class="nv">ready: </span><span class="nf">(fn) -&gt;</span>
+    <span class="nx">@event</span><span class="p">.</span><span class="nx">add</span> <span class="s1">&#39;ready&#39;</span><span class="p">,</span> <span class="nx">fn</span>
+  <span class="nv">loaded: </span><span class="o">-&gt;</span>
+    <span class="k">return</span> <span class="nx">@_loaded</span>
+<span class="k">class</span> <span class="nx">@Richarea</span>
+  <span class="vi">@detector: </span><span class="k">new</span> <span class="nx">Detector</span>
+  <span class="nv">constructor: </span><span class="nf">(@iframe) -&gt;</span>
+    <span class="vi">@raw = @loader = </span><span class="kc">null</span>
+    <span class="vi">@event = </span><span class="k">new</span> <span class="nx">Event</span>
+    <span class="nx">@event</span><span class="p">.</span><span class="nx">add</span> <span class="s1">&#39;ready&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+      <span class="vi">@raw = </span><span class="k">new</span> <span class="nx">ContentEditable</span> <span class="nx">@iframe</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Add events</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nv">_addEvent = </span><span class="p">(</span><span class="nx">trigger</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="o">=&gt;</span>
+        <span class="k">if</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">contentEditable</span><span class="o">?</span>
+          <span class="nx">DOMEvent</span><span class="p">.</span><span class="nx">add</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="nx">trigger</span><span class="p">,</span> <span class="nx">fn</span>
+        <span class="k">else</span>
+          <span class="nx">DOMEvent</span><span class="p">.</span><span class="nx">add</span> <span class="nx">@raw</span><span class="p">.</span><span class="nb">document</span><span class="p">,</span> <span class="nx">trigger</span><span class="p">,</span> <span class="nx">fn</span>
+      <span class="nv">events = </span><span class="p">[</span>
+        <span class="s1">&#39;keydown&#39;</span><span class="p">,</span> <span class="s1">&#39;keypress&#39;</span><span class="p">,</span> <span class="s1">&#39;keyup&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;blur&#39;</span><span class="p">,</span> <span class="s1">&#39;paste&#39;</span>
+      <span class="p">]</span>
+      <span class="k">for</span> <span class="nx">event</span> <span class="k">in</span> <span class="nx">events</span>
+        <span class="nx">_addEvent</span> <span class="nx">event</span><span class="p">,</span> <span class="p">(</span><span class="nx">args</span><span class="p">...)</span> <span class="o">=&gt;</span>
+          <span class="nx">@event</span><span class="p">.</span><span class="nx">call</span><span class="p">.</span><span class="nx">apply</span> <span class="nx">@event</span><span class="p">,</span> <span class="p">[</span><span class="nx">event</span><span class="p">].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Add 'change' event</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">@event</span><span class="p">.</span><span class="nx">add</span> <span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+        <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">setAttribute</span> <span class="s1">&#39;previousInnerHTML&#39;</span><span class="p">,</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">innerHTML</span>
+      <span class="nx">@event</span><span class="p">.</span><span class="nx">add</span> <span class="s1">&#39;click focus blur keydown keyup paste&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+        <span class="nx">@_change</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Add API</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="vi">@api = </span><span class="k">new</span> <span class="nx">API</span> <span class="err">@</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Tidy HTML</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">@tidy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nx">@iframe</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;src&#39;</span><span class="p">)</span><span class="o">?</span>
+      <span class="vi">@loader = </span><span class="k">new</span> <span class="nx">Loader</span> <span class="nx">@iframe</span>
+      <span class="nx">@loader</span><span class="p">.</span><span class="nx">ready</span> <span class="o">=&gt;</span>
+        <span class="nx">@event</span><span class="p">.</span><span class="nx">call</span> <span class="s1">&#39;ready&#39;</span>
+    <span class="k">else</span>
+      <span class="nx">@event</span><span class="p">.</span><span class="nx">call</span> <span class="s1">&#39;ready&#39;</span>
+  <span class="nv">_change: </span><span class="o">-&gt;</span>
+    <span class="nx">@tidy</span><span class="p">()</span>
+    <span class="nv">data = </span><span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;previousInnerHTML&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">data</span> <span class="o">isnt</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">innerHTML</span>
+      <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">setAttribute</span> <span class="s1">&#39;previousInnerHTML&#39;</span><span class="p">,</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">innerHTML</span>
+      <span class="nx">@event</span><span class="p">.</span><span class="nx">call</span> <span class="s1">&#39;change&#39;</span>
+  <span class="nv">tidy: </span><span class="o">-&gt;</span>
+    <span class="nx">HTMLTidy</span><span class="p">.</span><span class="nx">tidy</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="nx">@raw</span><span class="p">.</span><span class="nb">document</span>
+  <span class="nv">ready: </span><span class="nf">(fn) -&gt;</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">@loader</span><span class="o">?</span> <span class="o">or</span> <span class="nx">@loader</span><span class="p">.</span><span class="nx">loaded</span><span class="p">()</span>
+      <span class="nx">fn</span><span class="p">()</span>
+    <span class="k">else</span>
+      <span class="nx">@loader</span><span class="p">.</span><span class="nx">ready</span> <span class="nx">fn</span>
+  <span class="nv">getValue: </span><span class="o">-&gt;</span>
+    <span class="k">return</span> <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">innerHTML</span><span class="o">?</span> <span class="k">if</span> <span class="nx">@raw</span><span class="o">?</span>
+  <span class="nv">setValue: </span><span class="nf">(value) -&gt;</span>
+    <span class="k">if</span> <span class="nx">@raw</span><span class="o">?</span>
+      <span class="nx">@raw</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nv">innerHTML = </span><span class="nx">value</span>
+      <span class="nx">@_change</span><span class="p">()</span>
+  <span class="nv">execCommand: </span><span class="nf">(command, args=undefined) -&gt;</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="p">(</span><span class="nx">command</span> <span class="k">of</span> <span class="nx">@api</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nb">window</span><span class="p">.</span><span class="nx">console</span><span class="o">?</span><span class="p">.</span><span class="nx">error</span><span class="o">?</span> <span class="k">then</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="s2">&quot;Command &#39;#{command}&#39; not found.&quot;</span>
+    <span class="k">else</span>
+      <span class="nx">@api</span><span class="p">[</span><span class="nx">command</span><span class="p">]</span> <span class="nx">args</span>
+      <span class="nx">@_change</span><span class="p">()</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

@@ -1,0 +1,19 @@
+<!DOCTYPE html>  <html> <head>   <title>api.style.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               api.style.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="nv">API = </span><span class="nx">partial</span> <span class="nx">API</span><span class="p">,</span>
+  <span class="nv">forecolor: </span><span class="nf">(color) -&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">color: </span><span class="nx">color</span><span class="p">}</span>
+  <span class="nv">backcolor: </span><span class="nf">(color) -&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">backgroundColor: </span><span class="nx">color</span><span class="p">}</span>
+  <span class="nv">fontfamily: </span><span class="nf">(name) -&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">fontFamily: </span><span class="nx">name</span><span class="p">}</span>
+  <span class="nv">fontsize: </span><span class="nf">(size) -&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">fontSize: </span><span class="nx">size</span><span class="p">}</span>
+  <span class="nv">justifyleft: </span><span class="o">-&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">textAlign: </span><span class="s1">&#39;left&#39;</span><span class="p">},</span> <span class="kc">true</span>
+  <span class="nv">justifycenter: </span><span class="o">-&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">textAlign: </span><span class="s1">&#39;center&#39;</span><span class="p">},</span> <span class="kc">true</span>
+  <span class="nv">justifyright: </span><span class="o">-&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">textAlign: </span><span class="s1">&#39;right&#39;</span><span class="p">},</span> <span class="kc">true</span>
+  <span class="nv">justifyfull: </span><span class="o">-&gt;</span>
+    <span class="nx">@execCommand</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nv">textAlign: </span><span class="s1">&#39;justify&#39;</span><span class="p">},</span> <span class="kc">true</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

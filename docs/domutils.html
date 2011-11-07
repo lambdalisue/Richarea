@@ -1,0 +1,169 @@
+<!DOCTYPE html>  <html> <head>   <title>domutils.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               domutils.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h1>#</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">DOM</span> <span class="nx">Munipulate</span> <span class="nx">utilities</span>
+
+<span class="nv">Author: </span><span class="nx">Alisue</span> <span class="p">(</span><span class="nx">lambdalisue@hashnote</span><span class="p">.</span><span class="nx">net</span><span class="p">)</span>
+<span class="nv">License: </span><span class="nx">MIT</span> <span class="nx">License</span>
+
+<span class="nx">Copyright</span> <span class="mi">2011</span> <span class="nx">hashnote</span><span class="p">.</span><span class="nx">net</span><span class="p">,</span> <span class="nx">Alisue</span> <span class="nx">allright</span> <span class="nx">reserved</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h1>#</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">DOMUtils =</span>
+  <span class="nv">CONTAINER_ELEMENTS: </span><span class="p">[</span>
+      <span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="s1">&#39;div&#39;</span><span class="p">,</span>  <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;blockquote&#39;</span><span class="p">,</span> <span class="s1">&#39;li&#39;</span><span class="p">,</span> <span class="s1">&#39;td&#39;</span><span class="p">,</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>'del', 'ins', # most of time del and ins are used as inline</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="p">]</span>                              
+  <span class="nv">BLOCK_ELEMENTS: </span><span class="p">[</span>
+      <span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">,</span> <span class="s1">&#39;dl&#39;</span><span class="p">,</span> <span class="s1">&#39;form&#39;</span><span class="p">,</span> <span class="s1">&#39;h1&#39;</span><span class="p">,</span> <span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="s1">&#39;h3&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;h4&#39;</span><span class="p">,</span> <span class="s1">&#39;h5&#39;</span><span class="p">,</span> <span class="s1">&#39;h6&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;menu&#39;</span><span class="p">,</span> <span class="s1">&#39;noframes&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;ol&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;pre&#39;</span><span class="p">,</span> <span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="s1">&#39;ul&#39;</span><span class="p">,</span> <span class="s1">&#39;xmp&#39;</span>
+    <span class="p">]</span>                              
+  <span class="nv">CLOSE_ELEMENTS: </span><span class="p">[</span>
+    <span class="s1">&#39;img&#39;</span><span class="p">,</span> <span class="s1">&#39;br&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span>
+  <span class="p">]</span>
+  <span class="nv">isContainerNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">tagName = </span><span class="nx">node</span><span class="p">.</span><span class="nx">tagName</span><span class="o">?</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nx">tagName</span><span class="o">?</span> <span class="o">and</span> <span class="nx">tagName</span> <span class="k">in</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">CONTAINER_ELEMENTS</span>
+  <span class="nv">isBlockNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">tagName = </span><span class="nx">node</span><span class="p">.</span><span class="nx">tagName</span><span class="o">?</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nx">tagName</span><span class="o">?</span> <span class="o">and</span> <span class="nx">tagName</span> <span class="k">in</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">BLOCK_ELEMENTS</span>
+  <span class="nv">isCloseNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">tagName = </span><span class="nx">node</span><span class="p">.</span><span class="nx">tagName</span><span class="o">?</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nx">tagName</span><span class="o">?</span> <span class="o">and</span> <span class="nx">tagName</span> <span class="k">in</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">CLOSE_ELEMENTS</span>
+  <span class="nv">isInlineNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="k">return</span> <span class="o">not</span> <span class="p">(</span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isContainerNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="o">or</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isBlockNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="o">or</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">node</span><span class="p">))</span>
+  <span class="nv">isDataNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="k">return</span> <span class="nx">node</span><span class="o">?</span> <span class="o">and</span> <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">nodeType</span> <span class="o">is</span> <span class="mi">3</span><span class="p">)</span>
+  <span class="nv">isVisibleNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+      <span class="nv">text = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">getTextContent</span><span class="p">(</span><span class="nx">node</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/[\s\t\r\n]/g</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="nx">text</span><span class="p">.</span><span class="nx">length</span> <span class="o">isnt</span> <span class="mi">0</span>
+    <span class="k">else</span>
+      <span class="k">for</span> <span class="nx">child</span> <span class="k">in</span> <span class="nx">node</span><span class="p">.</span><span class="nx">childNodes</span>
+        <span class="k">return</span> <span class="kc">false</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isVisibleNode</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">true</span>
+  <span class="nv">isIsolateNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="k">return</span> <span class="o">not</span> <span class="nx">node</span><span class="p">.</span><span class="nx">nextSibling</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">node</span><span class="p">.</span><span class="nx">previousSibling</span>
+  <span class="nv">isAncestorOf: </span><span class="nf">(parent, node) -&gt;</span>
+    <span class="k">return</span> <span class="o">not</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="o">and</span> <span class="p">(</span><span class="nx">parent</span><span class="p">.</span><span class="nx">contains</span><span class="p">(</span><span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="k">then</span> <span class="nx">node</span><span class="p">.</span><span class="nx">parentNode</span> <span class="k">else</span> <span class="nx">node</span><span class="p">)</span> <span class="o">or</span> <span class="nx">node</span><span class="p">.</span><span class="nx">parentNode</span> <span class="o">is</span> <span class="nx">parent</span><span class="p">)</span>
+  <span class="nv">isAncestorOrSelf: </span><span class="nf">(root, node) -&gt;</span>
+    <span class="k">return</span> <span class="nx">root</span> <span class="o">is</span> <span class="nx">node</span> <span class="o">or</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isAncestorOf</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="nx">node</span><span class="p">)</span>
+  <span class="nv">isEqual: </span><span class="nf">(lhs, rhs) -&gt;</span>
+    <span class="k">if</span> <span class="nx">lhs</span><span class="o">?</span> <span class="o">and</span> <span class="nx">rhs</span><span class="o">?</span> <span class="o">and</span> <span class="nx">lhs</span><span class="p">.</span><span class="nx">nodeType</span> <span class="o">is</span> <span class="nx">rhs</span><span class="p">.</span><span class="nx">nodeType</span>
+      <span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span> <span class="nx">lhs</span>
+        <span class="k">return</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">getTextContent</span><span class="p">(</span><span class="nx">lhs</span><span class="p">)</span> <span class="o">is</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">getTextContent</span><span class="p">(</span><span class="nx">rhs</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="nv">deepEqual = </span><span class="nf">(lhs, rhs) -&gt;</span>
+          <span class="k">if</span> <span class="nx">lhs</span> <span class="k">instanceof</span> <span class="nb">Object</span> <span class="o">and</span> <span class="nx">rhs</span> <span class="k">instanceof</span> <span class="nb">Object</span>
+            <span class="k">for</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">lhs</span>
+              <span class="k">return</span> <span class="kc">false</span> <span class="k">if</span> <span class="nx">deepEqual</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">rhs</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span>
+          <span class="k">else</span> <span class="k">if</span> <span class="nx">lhs</span> <span class="k">instanceof</span> <span class="nb">Array</span> <span class="o">and</span> <span class="nx">rhs</span> <span class="k">instanceof</span> <span class="nb">Array</span>
+            <span class="k">return</span> <span class="kc">false</span> <span class="k">if</span> <span class="nx">lhs</span><span class="p">.</span><span class="nx">length</span> <span class="o">isnt</span> <span class="nx">rhs</span><span class="p">.</span><span class="nx">length</span>
+            <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">...</span><span class="nx">lhs</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span>
+              <span class="k">return</span> <span class="kc">false</span> <span class="k">if</span> <span class="nx">lhs</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">isnt</span> <span class="nx">rhs</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+          <span class="k">else</span>
+            <span class="k">return</span> <span class="kc">false</span> <span class="k">if</span> <span class="nx">lhs</span> <span class="o">isnt</span> <span class="nx">rhs</span>
+          <span class="k">return</span> <span class="kc">true</span>
+        <span class="nv">c1 = </span><span class="nx">lhs</span><span class="p">.</span><span class="nx">tagName</span><span class="o">?</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span> <span class="o">is</span> <span class="nx">rhs</span><span class="p">.</span><span class="nx">tagName</span><span class="o">?</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
+        <span class="nv">c2 = </span><span class="nx">deepEqual</span> <span class="nx">lhs</span><span class="p">.</span><span class="nx">styles</span><span class="p">,</span> <span class="nx">rhs</span><span class="p">.</span><span class="nx">styles</span>
+        <span class="k">return</span> <span class="nx">c1</span> <span class="o">and</span> <span class="nx">c2</span>
+    <span class="k">return</span> <span class="kc">false</span>
+  <span class="nv">createElementFromHTML: </span><span class="nf">(html) -&gt;</span>
+    <span class="nv">container = </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span> <span class="s1">&#39;div&#39;</span>
+    <span class="nv">container.innerHTML = </span><span class="nx">html</span>
+    <span class="k">return</span> <span class="nx">container</span><span class="p">.</span><span class="nx">firstChild</span>
+  <span class="nv">getTextContent: </span><span class="nf">(node) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>W3C DOM has textContent but IE use nodeValue</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">return</span> <span class="nx">node</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">or</span> <span class="nx">node</span><span class="p">.</span><span class="nx">nodeValue</span>
+  <span class="nv">setTextContent: </span><span class="nf">(node, text) -&gt;</span>
+    <span class="k">if</span> <span class="nx">node</span><span class="p">.</span><span class="nx">textContent</span><span class="o">?</span>
+      <span class="nv">node.textContent = </span><span class="nx">text</span>
+    <span class="k">else</span>
+      <span class="nv">node.nodeValue = </span><span class="nx">text</span>
+  <span class="nv">getNodeLength: </span><span class="nf">(node) -&gt;</span>
+    <span class="k">return</span> <span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="k">then</span> <span class="nx">node</span><span class="p">.</span><span class="nx">length</span> <span class="k">else</span> <span class="nx">node</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span>
+  <span class="nv">findClosestAncestor: </span><span class="nf">(root, node) -&gt;</span>
+    <span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isAncestorOf</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="nx">node</span><span class="p">)</span>
+      <span class="k">while</span> <span class="nx">node</span> <span class="o">and</span> <span class="nx">node</span><span class="p">.</span><span class="nx">parentNode</span> <span class="o">isnt</span> <span class="nx">root</span>
+        <span class="nv">node = </span><span class="nx">node</span><span class="p">.</span><span class="nx">parentNode</span>
+    <span class="k">return</span> <span class="nx">node</span>
+  <span class="nv">findChildPosition: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">counter = </span><span class="mi">0</span>
+    <span class="nx">counter</span><span class="o">++</span> <span class="k">while</span> <span class="p">(</span><span class="nx">node</span><span class="o">=</span><span class="nx">node</span><span class="p">.</span><span class="nx">previousSibling</span><span class="p">)</span><span class="o">?</span>
+    <span class="k">return</span> <span class="nx">counter</span>
+  <span class="nv">findUpstreamNode: </span><span class="nf">(start, test, endTest) -&gt;</span>
+    <span class="nv">cursor = </span><span class="nx">start</span>
+    <span class="k">while</span> <span class="nx">cursor</span><span class="o">?</span>
+      <span class="nv">result = </span><span class="nx">test</span><span class="p">(</span><span class="nx">cursor</span><span class="p">)</span>
+      <span class="k">return</span> <span class="nx">cursor</span> <span class="k">if</span> <span class="nx">result</span>
+      <span class="nv">cursor = </span><span class="nx">cursor</span><span class="p">.</span><span class="nx">parentNode</span>
+      <span class="k">return</span> <span class="kc">null</span> <span class="k">if</span> <span class="nx">endTest</span><span class="o">?</span> <span class="o">and</span> <span class="nx">endTest</span> <span class="nx">node</span>
+    <span class="k">return</span> <span class="kc">null</span>
+  <span class="nv">findTerminalNode: </span><span class="nf">(node, last=false) -&gt;</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">last</span>
+      <span class="nv">node = </span><span class="nx">node</span><span class="p">.</span><span class="nx">firstChild</span> <span class="k">while</span> <span class="nx">node</span><span class="o">?</span> <span class="o">and</span> <span class="nx">node</span><span class="p">.</span><span class="nx">firstChild</span><span class="o">?</span>
+    <span class="k">else</span>
+      <span class="nv">node = </span><span class="nx">node</span><span class="p">.</span><span class="nx">lastChild</span> <span class="k">while</span> <span class="nx">node</span><span class="o">?</span> <span class="o">and</span> <span class="nx">node</span><span class="p">.</span><span class="nx">lastChild</span><span class="o">?</span>
+    <span class="k">return</span> <span class="nx">node</span>
+  <span class="nv">findNextNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">test = </span><span class="nf">(node) -&gt;</span> <span class="nx">node</span><span class="p">.</span><span class="nx">nextSibling</span><span class="o">?</span>
+    <span class="nv">found = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findUpstreamNode</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">test</span>
+    <span class="k">return</span> <span class="nx">found</span><span class="o">?</span><span class="p">.</span><span class="nx">nextSibling</span>
+  <span class="nv">findPreviousNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">test = </span><span class="nf">(node) -&gt;</span> <span class="nx">node</span><span class="p">.</span><span class="nx">previousSibling</span><span class="o">?</span>
+    <span class="nv">found = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findUpstreamNode</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">test</span>
+    <span class="k">return</span> <span class="nx">found</span><span class="o">?</span><span class="p">.</span><span class="nx">previousSibling</span>
+  <span class="nv">findNextTerminalNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">node = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findNextNode</span> <span class="nx">node</span>
+    <span class="nv">node = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findTerminalNode</span> <span class="nx">node</span>
+    <span class="k">return</span> <span class="nx">node</span>
+  <span class="nv">findNextDataNode: </span><span class="nf">(node) -&gt;</span> 
+    <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span> <span class="s1">&#39;use DOMUtils.findNextTerminalNode insted&#39;</span>
+    <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findNextTerminalNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+  <span class="nv">findPreviousTerminalNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nv">node = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findPreviousNode</span> <span class="nx">node</span>
+    <span class="nv">node = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findTerminalNode</span> <span class="nx">node</span><span class="p">,</span> <span class="kc">true</span>
+    <span class="k">return</span> <span class="nx">node</span>
+  <span class="nv">findPreviousDataNode: </span><span class="nf">(node) -&gt;</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span> <span class="s1">&#39;use DOMUtils.findPreviousTerminalNode insted&#39;</span>
+    <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findPreviousTerminalNode</span> <span class="nx">node</span>
+  <span class="nv">applyToAllTerminalNodes: </span><span class="nf">(start, end, fn) -&gt;</span>
+    <span class="nv">cursor = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findTerminalNode</span> <span class="nx">start</span>
+    <span class="nv">end = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findTerminalNode</span> <span class="nx">end</span>
+    <span class="k">while</span> <span class="nx">cursor</span><span class="o">?</span>
+      <span class="nv">next = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">findNextTerminalNode</span> <span class="nx">cursor</span>
+      <span class="nx">fn</span> <span class="nx">cursor</span>
+      <span class="k">break</span> <span class="k">if</span> <span class="nx">cursor</span> <span class="o">is</span> <span class="nx">end</span>
+      <span class="nv">cursor = </span><span class="nx">next</span>
+  <span class="nv">splitDataNode: </span><span class="nf">(node, offset) -&gt;</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">false</span>
+    <span class="nv">newNode = </span><span class="nx">node</span><span class="p">.</span><span class="nx">cloneNode</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+    <span class="nx">node</span><span class="p">.</span><span class="nx">deleteData</span><span class="p">(</span><span class="nx">offset</span><span class="p">,</span> <span class="nx">node</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span>
+    <span class="nx">newNode</span><span class="p">.</span><span class="nx">deleteData</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">offset</span><span class="p">)</span>
+    <span class="nx">node</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">newNode</span><span class="p">,</span> <span class="nx">node</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">newNode</span>
+  <span class="nv">extractDataNode: </span><span class="nf">(node, start=undefined, end=undefined) -&gt;</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isDataNode</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+      <span class="k">return</span> <span class="kc">false</span>
+    <span class="nv">text = </span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">getTextContent</span> <span class="nx">node</span>
+    <span class="nx">start</span> <span class="o">?=</span> <span class="mi">0</span>
+    <span class="nx">end</span> <span class="o">?=</span> <span class="nx">text</span><span class="p">.</span><span class="nx">length</span>
+    <span class="k">if</span> <span class="nx">start</span> <span class="o">is</span> <span class="nx">end</span> <span class="o">or</span> <span class="p">(</span><span class="nx">start</span> <span class="o">is</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">end</span> <span class="o">is</span> <span class="nx">text</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="k">then</span> <span class="k">return</span> <span class="nx">node</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>split text to three part</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">left = </span><span class="nx">text</span><span class="p">.</span><span class="nx">substring</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">start</span>
+    <span class="nv">middle = </span><span class="nx">text</span><span class="p">.</span><span class="nx">substring</span> <span class="nx">start</span><span class="p">,</span> <span class="nx">end</span>
+    <span class="nv">right = </span><span class="nx">text</span><span class="p">.</span><span class="nx">substring</span> <span class="nx">end</span><span class="p">,</span> <span class="nx">text</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>store nextSibling</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">nextSibling = </span><span class="nx">node</span><span class="p">.</span><span class="nx">nextSibling</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>remove textNode</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">parentNode = </span><span class="nx">node</span><span class="p">.</span><span class="nx">parentNode</span>
+    <span class="nx">parentNode</span><span class="p">.</span><span class="nx">removeChild</span> <span class="nx">node</span>
+    <span class="nv">doc = </span><span class="nb">document</span>    <span class="c1"># for speed up in IE</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>create element for each part</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">if</span> <span class="nx">left</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="nv">_textNode = </span><span class="nx">doc</span><span class="p">.</span><span class="nx">createTextNode</span> <span class="nx">left</span>
+      <span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">_textNode</span><span class="p">,</span> <span class="nx">nextSibling</span> <span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isVisibleNode</span> <span class="nx">_textNode</span>
+    <span class="k">if</span> <span class="nx">middle</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="nv">textNode = </span><span class="nx">doc</span><span class="p">.</span><span class="nx">createTextNode</span> <span class="nx">middle</span>
+      <span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">textNode</span><span class="p">,</span> <span class="nx">nextSibling</span>
+    <span class="k">if</span> <span class="nx">right</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="nv">_textNode = </span><span class="nx">doc</span><span class="p">.</span><span class="nx">createTextNode</span> <span class="nx">right</span>
+      <span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">_textNode</span><span class="p">,</span> <span class="nx">nextSibling</span> <span class="k">if</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">isVisibleNode</span> <span class="nx">_textNode</span>
+    <span class="k">return</span> <span class="nx">textNode</span>
+  <span class="nv">concatDataNode: </span><span class="nf">(lhs, rhs) -&gt;</span>
+    <span class="nv">parentNode = </span><span class="nx">lhs</span><span class="p">.</span><span class="nx">parentNode</span>
+    <span class="nx">parentNode</span><span class="p">.</span><span class="nx">removeChild</span> <span class="nx">rhs</span>
+    <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">setTextContent</span> <span class="nx">lhs</span><span class="p">,</span> <span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">getTextContent</span><span class="p">(</span><span class="nx">lhs</span><span class="p">)</span><span class="o">+</span><span class="nx">DOMUtils</span><span class="p">.</span><span class="nx">getTextContent</span><span class="p">(</span><span class="nx">rhs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">lhs</span>
+  <span class="nv">concatNode: </span><span class="nf">(lhs, rhs) -&gt;</span>
+    <span class="nv">parentNode = </span><span class="nx">rhs</span><span class="p">.</span><span class="nx">parentNode</span>
+    <span class="nx">parentNode</span><span class="p">.</span><span class="nx">removeChild</span> <span class="nx">rhs</span>
+    <span class="k">while</span> <span class="nx">rhs</span><span class="p">.</span><span class="nx">firstChild</span><span class="o">?</span>
+      <span class="nx">lhs</span><span class="p">.</span><span class="nx">appendChild</span> <span class="nx">rhs</span><span class="p">.</span><span class="nx">firstChild</span>
+    <span class="k">return</span> <span class="nx">lhs</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
