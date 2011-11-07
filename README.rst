@@ -24,17 +24,7 @@ First you have to include ``richarea.min.js`` on your HTML. HTML looks like belo
             <!-- /optional -->
         </head>
         <body>
-            <iframe id="richarea">
-            When I find myself in times of trouble
-            Mother Mary comes to me
-            Speaking words of wisdom, let it be.
-            And in my hour of darkness
-            She is standing right in front of me
-            Speaking words of wisdom, let it be.
-            Let it be, let it be.
-            Let it be, let it be.
-            Whisper words of wisdom, let it be.
-            </iframe>
+            <iframe id="richarea"></iframe>
         </body>
     </html>
                                                   
@@ -45,9 +35,8 @@ CoffeeScript with jQuery + Firebug::
         $(->
             richarea = new Richarea $('#richarea')        
             console.log richarea.getValue()               
-            richarea.execCommand 'strong'
-            richarea.execCommand 'em'
-            richarea.execCommand 'h1'
+            richarea.surroundSelection '<strong>'
+            richarea.surroundSelection '<em>'
             # ...whatever
         )
     </script>
@@ -59,9 +48,8 @@ JavaScript with Firebug::
             var richarea = document.getElementById('richarea');
             richarea = new Richarea(richarea);
             console.log(richarea.getValue());
-            richarea.execCommand('strong');
-            richarea.execCommand('em');
-            richarea.execCommand('h1');
+            richarea.surroundSelection('<strong>');
+            richarea.surroundSelection('<em>');
             // ...whatever
         });
     </script>

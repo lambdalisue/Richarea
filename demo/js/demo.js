@@ -102,7 +102,7 @@ window.commands = (function(){
 })();
 // The script use jQuery but Richarea.js is not jQuery dependent
 $(document).ready(function(){
-    window.richarea = new Richarea($('#richarea').get(0));
+    window.richarea = new Richarea($('#richarea'));
     richarea.ready(function(){
         richarea.bind('change', function(e){
             // richarea -> preview

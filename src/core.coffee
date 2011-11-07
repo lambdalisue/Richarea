@@ -8,6 +8,8 @@ class @Richarea extends Event
     Event: Event
   constructor: (@iframe) ->
     super(null)
+    if window.jQuery? and @iframe instanceof jQuery
+      @iframe = @iframe.get(0)
     @raw = new ContentEditable @iframe
     @raw.ready =>
       @selection = new Selection @raw.document
