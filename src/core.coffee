@@ -12,6 +12,8 @@ class @Richarea extends Event
       # Add Event
       @bind 'change', (e) => 
         @tidy()
+      # Initial Tidy
+      @tidy()
   # Tidy HTML with HTMLTidy
   tidy: ->
     HTMLTidy.tidy @raw.body, @raw.document
