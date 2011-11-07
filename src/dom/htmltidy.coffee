@@ -48,23 +48,55 @@ HTMLTidy =
         HTMLTidy._tidyInline cursor
       cursor = next
   _tidyBlock: (root) ->
+    if root.tagName in ['DT', 'DD'] and root.parentNode.tagName isnt 'DL'
+      Surround.out root, document.createElement 'dl'
     cursor = root.firstChild
     while cursor?
       next = cursor.nextSibling
       if DOMUtils.isContainerNode(cursor)
-        # Offended W3C rule: Block node cannot contain except inline node
-        test = (node) -> DOMUtils.isContainerNode node
-        container = DOMUtils.findUpstreamNode cursor, test
-        offended = cursor.cloneNode false
-        Surround.remove cursor
-        Surround._container container, offended
+        if cursor.tagName is 'LI' and root.tagName in ['OL', 'UL']
+          # Recursive call
+          HTMLTidy._tidyContainer(cursor)
+        else if cursor.tagName is 'TD' and root.tagName is 'TR'
+          # Recursive call
+          HTMLTidy._tidyContainer(cursor)
+        else
+          # Offended W3C rule: Block node cannot contain except inline node
+          test = (node) -> DOMUtils.isContainerNode node
+          container = DOMUtils.findUpstreamNode cursor, test
+          offended = cursor.cloneNode false
+          Surround.remove cursor
+          Surround._container container, offended
       else if DOMUtils.isBlockNode(cursor)
-        # Offended W3C rule: Block node cannot contain except inline node
-        test = (node) -> DOMUtils.isContainerNode node
-        container = DOMUtils.findUpstreamNode cursor, test
-        offended = cursor.cloneNode false
-        Surround.remove cursor
-        Surround._block container, offended
+        if cursor.tagName in ['OL', 'UL'] and root.tagName in ['OL', 'UL']
+          # Recursive call
+          HTMLTidy._tidyBlock(cursor)
+        else if cursor.tagName in ['DT', 'DD'] and root.tagName is 'DL'
+          # Recursive call
+          HTMLTidy._tidyBlock(cursor)
+        else if cursor.tagName in ['TBODY', 'THEAD', 'TFOOT', 'TR'] and root.tagName is 'TABLE'
+          # Recursive call
+          HTMLTidy._tidyBlock(cursor)
+        else if cursor.tagName is 'TR' and root.tagName in ['TABLE', 'TBODY', 'THEAD', 'TFOOT']
+          # Recursive call
+          HTMLTidy._tidyBlock(cursor)
+        else
+          # Offended W3C rule: Block node cannot contain except inline node
+          offended = cursor
+          # Get next sibling part of offended
+          nextSiblingFragment = root.cloneNode false
+          cursor = offended.nextSibling
+          while cursor?
+            nextSiblingFragment.appendChild cursor
+            cursor = cursor.nextSibling
+          parentNode = root.parentNode
+          nextSibling = root.nextSibling
+          parentNode.insertBefore offended, nextSibling
+          parentNode.insertBefore nextSiblingFragment, nextSibling
+          # Recursive call
+          HTMLTidy._tidyBlock root
+          # return because DOM structure change too much to continue
+          return 
       else
         if next?
           if DOMUtils.isDataNode(cursor) and DOMUtils.isDataNode(next)
@@ -84,6 +116,8 @@ HTMLTidy =
       # If nothing has modified, step next node
       cursor = next
   _tidyContainer: (root) ->
+    if root.tagName is 'LI' and root.parentNode?.tagName not in ['OL', 'UL']
+      Surround.out root, document.createElement 'ul'
     cursor = root.firstChild
     while cursor?
       next = cursor.nextSibling
@@ -92,7 +126,7 @@ HTMLTidy =
         if not DOMUtils.isDataNode(next) or '\n' not in DOMUtils.getTextContent(next)
           newline = document.createTextNode '\n'
           cursor.parentNode.insertBefore newline, next
-      else if DOMUtils.isVisibleNode(cursor)
+      else if root.tagName not in ['LI', 'TD'] and DOMUtils.isVisibleNode(cursor)
         # visible inline or DataNode must be surround with block
         cursor = Surround.out cursor, document.createElement('p')
         # Call this step again
@@ -119,7 +153,12 @@ HTMLTidy =
     HTMLTidy._tidyContainer root
     # Restore
     if startContainer?
-      range = _selection.createRange()
-      range.setStart startContainer, startOffset
-      range.setEnd endContainer, endOffset
-      _selection.setSelection range
+      try
+        range = _selection.createRange()
+        range.setStart startContainer, startOffset
+        range.setEnd endContainer, endOffset
+        _selection.setSelection range
+      catch e
+        # Sometime the action above fail because too much modification has
+        # proceed and DOM structure change dynamically
+

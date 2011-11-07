@@ -90,7 +90,7 @@ ul#toolbar li.separator{
     border-right: 1px solid #e4e4e4;
     text-indent: -10000px;
 }
-ul#toolbar li.button a{
+ul#toolbar li.button button{
     display: block;
     margin: 0;
     padding: 4px 6px;
@@ -103,13 +103,13 @@ ul#toolbar li.button a{
     vertical-align: center;
     cursor: pointer;
 }
-ul#toolbar li.button a:hover {
+ul#toolbar li.button button:hover {
     background: #eeeefa;
 }
-ul#toolbar li.button a:active {
+ul#toolbar li.button button:active {
     background: #ddddff;
 }
-ul#toolbar li.button.active a{
+ul#toolbar li.button.active button{
     background: #ddddff !important;
 }
 iframe#richarea{

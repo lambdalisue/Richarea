@@ -20,6 +20,7 @@ class ContentEditable extends Event
           @fire 'ready'
     else
       Event.bind @iframe, 'load', => @fire 'ready'
+    @window = null
     @bind 'ready', =>
       @window = @iframe.contentWindow
       @document = @iframe.contentDocument or @window.document
@@ -44,12 +45,23 @@ class ContentEditable extends Event
       else if @document.designMode?
         @document.designMode = 'On'
       # Porting DOM Event
-      Event.bind @body, 'focus click dblclick keydown keypress keyup blur paste', (e) => 
+      Event.bind @body, 'focus click dblclick mousedown mousemove mouseup keydown keypress keyup blur paste', (e) => 
         e.target = @
         @fire e
       # Add `change` event
       @bind 'focus', => @iframe.setAttribute 'previousContent', @getValue()
-      @bind 'focus click dblclick keydown keyup paste blur', => @update()
+      @bind 'focus click dblclick mousedown mousemove mouseup keydown keyup paste blur', => @update()
+      # Add Tab indent function
+      @bind 'keydown', (e) =>
+        key = e.keyCode or e.charCode or e.which
+        if key is 9 and not e.ctrlKey and not e.altKey
+          e.preventDefault()
+          if e.shiftKey
+            @execCommand 'outdent'
+          else
+            @execCommand 'indent'
+          return false
+        return true
   ready: (listener) ->
     if @window?
       # Load has complete
@@ -63,8 +75,20 @@ class ContentEditable extends Event
       @iframe.setAttribute 'previousContent', @getValue()
   getValue: ->
     if @window?
-      return @body.innerHML
+      return @body.innerHTML
   setValue: (value) ->
     if @window?
       @body.innerHTML = value
       @update()
+  execCommand: (command, value=null) ->
+    return @document.execCommand command, false, value
+  queryCommandState: (command) ->
+    return @document.queryCommandState command
+  queryCommandEnabled: (command) ->
+    return @document.queryCommandEnabled command
+  queryCommandIndeterm: (command) ->
+    return @document.queryCommandIndeterm command
+  queryCommandSupported: (command) ->
+    return @document.queryCommandSupported command
+  queryCommandValue: (command) ->
+    return @document.queryCommandValue command

@@ -37,21 +37,80 @@ window.commands = (function(){
     };
     this.unblockquote = function(){
         richarea.unsurroundSelection('<blockquote>');
-        return false;
+    };
+    this.a = function(){
+        var nodelist = [];
+        var namelist = [];
+        var fn = function(node){
+            if(!Richarea.dom.DOMUtils.isDataNode(node)){
+                nodelist.push(node);
+                namelist.push(node.tagName);
+            }
+        };
+        var defaultValue = '';
+        if(richarea.applyToAllUpstreamNodeOfSelection(fn)){
+            var index = namelist.indexOf('A');
+            if(index != -1){
+                exists = nodelist[index];
+                defaultValue = exists.getAttribute('href');
+            }
+        }
+        var href = prompt('Please input href URL', defaultValue);
+        if(!!(href)){
+            richarea.surroundSelection('<a href="'+href+'">');
+        }
+    };
+    this.img = function(){
+        var src = prompt('Please input src URL');
+        if(!!(src)){
+            richarea.replaceSelection('<img src="'+src+'">');
+        }
+    };
+    this.hr = function(){
+        richarea.replaceSelection('<hr>');
+    };
+    this.indent = function(){
+        richarea.execCommand('indent');
+    };
+    this.outdent = function(){
+        richarea.execCommand('outdent');
+    };
+    this.ul = function(){
+        richarea.execCommand('insertUnorderedList');
+    };
+    this.ol = function(){
+        richarea.execCommand('insertOrderedList');
+    };
+    this.table = function(){
+        var raws, cols, caption;
+        rows = prompt('Please input number of row');
+        cols = prompt('Please input number of column');
+        caption = prompt('(Optional) Pleaes input table caption');
+        var tds = [];
+        for(var i=0; i<cols; i++){
+            tds.push('    <td>XXX</td>');
+        }
+        var trs = [];
+        for(var i=0; i<rows; i++){
+            trs.push("  <tr>\n"+tds.join('\n')+"\n  </tr>");
+        }
+        caption = !!(caption) ? "\n<caption>"+caption+"</caption>" : ''
+        table = "<table>"+caption+"\n"+trs.join('\n')+"\n</table>"
+        richarea.replaceSelection(table);
     };
     return this;
 })();
 // The script use jQuery but Richarea.js is not jQuery dependent
 $(document).ready(function(){
-    richarea = new Richarea($('#richarea').get(0));
+    window.richarea = new Richarea($('#richarea').get(0));
     richarea.ready(function(){
         richarea.bind('change', function(e){
             // richarea -> preview
-            $('#preview').val(this.getValue());
+            $('#preview').val(richarea.getValue());
         });
         richarea.bind('change focus keydown keypress click blur', function(e){
             // Update PATH
-            var path = richarea.getPath();
+            var path = richarea.getUpstreamNodeTagNameListOfSelection();
             var names = [
                 'h1', 'h2', 'h3', 'strong', 'em', 'ins', 'del', 'sup', 'sub'
             ];
@@ -67,10 +126,9 @@ $(document).ready(function(){
         });
         $('#preview').bind('blur', function(e){
             // preview -> richarea
-            this.setValue($('#preview').val());
+            richarea.setValue($('#preview').val());
         });
         // initial update
         richarea.fire('change');
     });
-    window.richarea = richarea;
 });

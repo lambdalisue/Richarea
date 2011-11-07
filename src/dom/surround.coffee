@@ -133,6 +133,13 @@ Surround =
     # find upstream compatible inline node
     test = (node) -> DOMUtils.isEqual node, cover
     found = DOMUtils.findUpstreamNode root, test
+    if found? and cover.tagName is 'A' and found.getAttribute('href') isnt cover.getAttribute('href')
+      # Replace href to new one
+      found.setAttribute 'href', cover.getAttribute('href')
+      prerange = new Prerange
+      prerange.setStart found
+      prerange.setEnd found
+      return prerange
     if found?
       # Most complicated pattern. This pattern have to handle out node of range
       # as well (sometime). Remove found cover node and resurround each downstream

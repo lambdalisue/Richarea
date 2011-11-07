@@ -15,11 +15,20 @@ DOMUtils =
   BLOCK_ELEMENTS: [
       'address', 'dir', 'dl', 'form', 'h1', 'h2', 'h3',
       'h4', 'h5', 'h6', 'hr', 'menu', 'noframes',
-      'ol', 'p', 'pre', 'table', 'ul', 'xmp'
+      'ol', 'p', 'pre', 'table', 'ul', 'xmp', 'dt', 'dd',
+      'tr', 'tbody', 'thead', 'tfoot',
     ]                              
   CLOSE_ELEMENTS: [
     'img', 'br', 'hr'
   ]
+  isNode: (node) ->
+    if node instanceof Node
+      return true
+    else if DOMUtils.isHTMLBodyElement(node)
+      return true
+    return false
+  isHTMLBodyElement: (node) ->
+    return node.toString?() is '[object HTMLBodyElement]'
   isContainerNode: (node) ->
     tagName = node.tagName?.toLowerCase()
     return tagName? and tagName in DOMUtils.CONTAINER_ELEMENTS

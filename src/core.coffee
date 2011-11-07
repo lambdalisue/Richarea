@@ -1,12 +1,18 @@
 class @Richarea extends Event
   @detector: new Detector
+  @dom: 
+    DOMUtils: DOMUtils
+    Surround: Surround
+    HTMLTidy: HTMLTidy
+  @utils:
+    Event: Event
   constructor: (@iframe) ->
     super(null)
     @raw = new ContentEditable @iframe
     @raw.ready =>
       @selection = new Selection @raw.document
       # Porting Events
-      @raw.bind 'focus click dblclick keydown keypress keyup paste blur change', (e) => 
+      @raw.bind 'focus click dblclick mousedown mousemove mouseup keydown keypress keyup paste blur change', (e) => 
         e.target = @
         @fire e
       # Add Event
@@ -16,9 +22,11 @@ class @Richarea extends Event
       @tidy()
   # Tidy HTML with HTMLTidy
   tidy: ->
-    HTMLTidy.tidy @raw.body, @raw.document
+    #HTMLTidy.tidy @raw.body, @raw.document
+    @
   # Add fn to ready event. If IFrame has already loaded just fn will be called
-  ready: (listener) -> @raw.ready listener
+  ready: (listener) -> 
+    @raw.ready listener
   # Get value
   getValue: ->
     return @raw.getValue()
@@ -26,31 +34,55 @@ class @Richarea extends Event
   setValue: (value) ->
     @raw.setValue value
   # Exec browser editor command
-  execCommand: (command, args=undefined) ->
+  execCommand: (command, value=null) ->
+    @raw.execCommand command, value
     @raw.update()
-  # Get current path
-  getPath: ->
+  # Apply fn to all upstream node of selection
+  applyToAllUpstreamNodeOfSelection: (fn) ->
     selection = @selection.getSelection()
     if selection.rangeCount > 0
       range = selection.getRangeAt 0
       cursor = range.commonAncestorContainer
-      path = []
-      while cursor? and cursor.toString() isnt '[object HTMLBodyElement]'
-        path.push cursor.tagName if not DOMUtils.isDataNode(cursor)
+      while cursor? and not DOMUtils.isHTMLBodyElement(cursor)
+        fn cursor
         cursor = cursor.parentNode
-      path = path.reverse()
-      return path
+      return true
+    else
+      return false
+  # Get all upstream node instance list of selection
+  # Notice: DataNode is not included
+  getUpstreamNodeListOfSelection: ->
+    nodelist = []
+    fn = (node) ->
+      nodelist.push node if not DOMUtils.isDataNode(node)
+    if @applyToAllUpstreamNodeOfSelection(fn)
+      nodelist = nodelist.reverse()
+      return nodelist
     return []
+  # Get all upstream node `tagName` list of selection
+  # Notice: DataNode is not included
+  getUpstreamNodeTagNameListOfSelection: ->
+    namelist = []
+    fn = (node) ->
+      namelist.push node.tagName if not DOMUtils.isDataNode(node)
+    if @applyToAllUpstreamNodeOfSelection(fn)
+      namelist = namelist.reverse()
+      return namelist
+    return []
+  # Get W3C/W3C compatible selection
   getSelection: ->
     return @selection.getSelection()
+  # Set selection via W3C/W3C compatible range
   setSelection: (range) ->
     @selection.setSelection range
+  # Get selected content
   getSelectedContent: ->
     selection = @getSelection()
     if selection.rangeCount > 0 and not selection.isCollapsed
       range = selection.getRangeAt 0
       return range.cloneContents()
     return null
+  # Replace selection with replace node
   replaceSelection: (replace, select=true) ->
     selection = @getSelection()
     if selection.rangeCount > 0
@@ -64,6 +96,7 @@ class @Richarea extends Event
       range.collapse false if not select
       @setSelection range
       @raw.update()
+  # Insert insert node before the selection
   insertBeforeSelection: (insert, select=true) ->
     # TODO:
     # if extracted is DataNode, HTMLTidy will break selection
@@ -81,6 +114,7 @@ class @Richarea extends Event
       range.collapse false if not select
       @setSelection range
       @raw.update()
+  # Insert insert node after the selection
   insertAfterSelection: (insert, select=true) ->
     # TODO:
     # if extracted is DataNode, HTMLTidy will break selection
@@ -98,6 +132,7 @@ class @Richarea extends Event
       range.collapse false if not select
       @setSelection range
       @raw.update()
+  # Surround selection with cover node
   surroundSelection: (cover, select=true) ->
     selection = @getSelection()
     if selection.rangeCount > 0
@@ -110,6 +145,7 @@ class @Richarea extends Event
       range.collapse false if not select
       @setSelection range
       @raw.update()
+  # Unsurround cover node of selection
   unsurroundSelection: (cover, select=true) ->
     selection = @getSelection()
     if selection.rangeCount > 0
