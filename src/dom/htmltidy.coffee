@@ -8,6 +8,17 @@ Copyright 2010 hashnote.net, Alisue allright reserved
 ###
 HTMLTidy =
   _tidyInline: (root) ->
+    # Convert compatible inline node
+    COMPATIBLE = 
+      b: 'strong'
+      i: 'em'
+      u: 'ins'
+      s: 'del'
+    for key, value of COMPATIBLE
+      if root.tagName.toLowerCase() is key
+        root = Surround.replace root, document.createElement(value)
+        break
+    # Apply to childNodes
     cursor = root.firstChild
     while cursor?
       next = cursor.nextSibling
