@@ -38,9 +38,9 @@ var DOMUtils = {
 		return node && node.nodeValue !== null && node.data !== null;
 	},
 	isAncestorOf: function (parent, node) {
-		return !DOMUtils.isDataNode(parent) &&
-		    (parent.contains(DOMUtils.isDataNode(node) ? node.parentNode : node) ||		    
-		    node.parentNode == parent);
+        return !DOMUtils.isDataNode(parent) &&
+            (parent.contains(DOMUtils.isDataNode(node) ? node.parentNode : node) ||		    
+            node.parentNode == parent);
 	},
 	isAncestorOrSelf: function (root, node) {
 		return DOMUtils.isAncestorOf(root, node) || root == node;
@@ -164,10 +164,10 @@ DOMRange.prototype = {
 		// collapsed attribute
 		this.collapsed = (this.startContainer == this.endContainer && this.startOffset == this.endOffset);
 		// find common ancestor
-		var node = this.startContainer;
-		while (node && node != this.endContainer && !DOMUtils.isAncestorOf(node, this.endContainer))
-			node = node.parentNode;
-		this.commonAncestorContainer = node;
+        var node = this.startContainer;
+        while (node && node.parentNode && node != this.endContainer && !DOMUtils.isAncestorOf(node, this.endContainer))
+            node = node.parentNode;
+        this.commonAncestorContainer = node;
 	},
 	
 	// range methods
@@ -261,7 +261,8 @@ DOMRange.prototype = {
 			DOMUtils.splitDataNode(this.startContainer, this.startOffset);
 			this.startContainer.parentNode.insertBefore(newNode, this.startContainer.nextSibling);
 		} else {
-			this.startContainer.insertBefore(newNode, this.startContainer.childNodes[this.startOffset]);
+		    var nextSibling = this.startContainer.firstChild ? this.startContainer.childNodes[this.startOffset-1] : null;
+			this.startContainer.insertBefore(newNode, nextSibling);
 		}
 		// resync start anchor
 		this.setStart(this.startContainer, this.startOffset);
@@ -443,9 +444,8 @@ DOMSelection.prototype = {
 	    if (cursor === undefined) { cursor = true; }
 		// checks if a created text range exists or is an editable cursor
 		return textRange.compareEndPoints('StartToEnd', textRange) != 0 ||
-		    (textRange.parentElement().isContentEditable && cursor);
+		    (this._document.body.contentEditable && cursor);
 	},
-	
 	// public methods
 	addRange: function (range) {
 		// add range or combine with existing range

@@ -40,7 +40,7 @@ class Prerange
     @startContainer = startContainer
     @startOffset = startOffset
   setEnd: (endContainer, endOffset) ->
-    if not endOffset?
+    if not endOffset? and endContainer?
       if endContainer.firstChild?
         endOffset = endContainer.childNodes.length
       else

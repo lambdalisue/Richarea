@@ -126,7 +126,7 @@ HTMLTidy =
       next = cursor.nextSibling
       if DOMUtils.isContainerNode(cursor) or DOMUtils.isBlockNode(cursor)
         # Check newline
-        if not DOMUtils.isDataNode(next) or '\n' not in DOMUtils.getTextContent(next)
+        if (not DOMUtils.isDataNode(next) or '\n' not in DOMUtils.getTextContent(next))and Richarea.detector.browser isnt 'Explorer'
           newline = document.createTextNode '\n'
           cursor.parentNode.insertBefore newline, next
       else if root.tagName not in ['LI', 'TD'] and DOMUtils.isVisibleNode(cursor)

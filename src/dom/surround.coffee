@@ -75,7 +75,7 @@ Surround =
     test = (node) -> DOMUtils.isBlockNode(node) and DOMUtils.isContainerNode(node.parentNode)
     found = DOMUtils.findUpstreamNode node, test
     # container node can contain anything so just surround in
-    node = Surround.out found, cover
+    node = Surround.out found or node, cover
     # return Prerange instance
     prerange = new Prerange
     prerange.setStart node
@@ -90,8 +90,16 @@ Surround =
       # remove found block
       Surround.remove found
       prerange = new Prerange
-      prerange.setStart DOMUtils.findNextNode(start)
-      prerange.setEnd DOMUtils.findPreviousNode(end)
+      start = DOMUtils.findNextNode(start)
+      end = DOMUtils.findPreviousNode(end)
+      if not start?
+        prerange.setStart node
+      else
+        prerange.setStart start
+      if not end?
+        prerange.setEnd node
+      else
+        prerange.setEnd end
       return prerange
     else
       prerange = new Prerange
@@ -146,7 +154,10 @@ Surround =
       # terminal node of found cover node except selected range
       # store firstChild and lastChild before remove found node
       firstChild = found.firstChild
-      lastChild = DOMUtils.findNextTerminalNode found.lastChild
+      if Richarea.detector.browser is 'Explorer'
+        lastChild = found.lastChild
+      else
+        lastChild = DOMUtils.findNextTerminalNode found.lastChild
       # Remove surround node
       root = Surround.remove found
       # find exclude nodes
