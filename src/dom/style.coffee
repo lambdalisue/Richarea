@@ -1,5 +1,5 @@
 ###
-DOM Style util
+DOM Surround util
 
 Author: Alisue (lambdalisue@hashnote.net)
 License: MIT License
@@ -9,36 +9,8 @@ Copyright 2011 hashnote.net, Alisue allright reserved
 Dependencies:
   - DOMUtils (domutils.coffee)
   - Prerange (selection.coffee)
-  - Surround (surround.coffee)
 ###
-Style = 
-  _getActualStyleValues: (styles) ->
-    tmp = document.createElement 'div'
-    for key, value of styles
-      tmp.styles[key] = value
-    results = {}
-    for key, value of styles
-      results[key] = tmp.styles[key]
-    return results
-  # style the node
-  style: (node, styles) ->
-    styles = Style._getActualStyleValues styles
-    for key, value of styles
-      if node.styles[key] is value
-        # remove the style
-        node.styles[key] = null
-        delete node.styles[key]
-      else
-        node.styles[key] = value
-    return node
-  # unstyle the node
-  unstyle: (node, styles) ->
-    styles = Style._getActualStyleValues styles
-    for key, value of styles
-      node.styles[key] = null
-      delete node.styles[key]
-    return node
-
+Surround = 
   # surround node with cover node
   # <node>xxx</node> -> <cover><node>xxx</node></cover>
   out: (node, cover) ->
@@ -268,4 +240,3 @@ Style =
         else
           end = endContainer.childNodes[endOffset-1]
       return Surround._inline root, start, end, cover
-
