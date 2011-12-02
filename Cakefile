@@ -28,6 +28,7 @@ FILES = [
   'utils/detector',
   'utils/partial',
   'utils/event',
+  'utils/compare',
   'dom/domutils',
   'dom/htmltidy',
   'dom/selection',

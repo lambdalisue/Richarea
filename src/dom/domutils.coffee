@@ -6,6 +6,8 @@ License: MIT License
 
 Copyright 2011 hashnote.net, Alisue allright reserved
 
+Dependencies
+  - Compare (utils/compare.coffee)
 ###
 DOMUtils =
   CONTAINER_ELEMENTS: [
@@ -68,19 +70,8 @@ DOMUtils =
       if DOMUtils.isDataNode lhs
         return DOMUtils.getTextContent(lhs) is DOMUtils.getTextContent(rhs)
       else
-        deepEqual = (lhs, rhs) ->
-          if lhs instanceof Object and rhs instanceof Object
-            for key, value of lhs
-              return false if deepEqual(value, rhs[key])
-          else if lhs instanceof Array and rhs instanceof Array
-            return false if lhs.length isnt rhs.length
-            for i in [0...lhs.length]
-              return false if lhs[i] isnt rhs[i]
-          else
-            return false if lhs isnt rhs
-          return true
         c1 = lhs.tagName?.toLowerCase() is rhs.tagName?.toLowerCase()
-        c2 = deepEqual lhs.styles, rhs.styles
+        c2 = Compare.deepEqual lhs.styles, rhs.styles
         return c1 and c2
     return false
   createElementFromHTML: (html) ->
